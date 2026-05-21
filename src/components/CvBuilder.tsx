@@ -35,7 +35,9 @@ export default function CvBuilder() {
 
   useEffect(() => {
     const saved = loadCv();
-    if (saved) setCv(saved);
+    if (saved) {
+      setCv(saved.photoUrl?.trim() ? saved : { ...saved, photoUrl: "https://i.ibb.co/wrBTs6BP/image-1.png" });
+    }
     setReady(true);
   }, []);
 

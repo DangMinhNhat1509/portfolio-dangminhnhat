@@ -1480,3 +1480,43 @@ button.danger {
     box-shadow: none !important;
   }
 }
+
+/* ===== PHOTO SIZE FIX - làm ảnh CV to và rõ hơn ===== */
+.cv-photo img {
+  object-position: center top !important;
+}
+
+/* Mẫu 1 - IT Support: ảnh lớn hơn trong sidebar */
+.it-side .cv-photo {
+  width: 44mm !important;
+  height: 50mm !important;
+  border-radius: 20px !important;
+  margin-bottom: 6mm !important;
+}
+
+/* Mẫu 2 - Giáo viên: ảnh tròn lớn hơn, cân header lại */
+.teacher-hero {
+  grid-template-columns: 44mm 1fr !important;
+}
+
+.teacher-hero .cv-photo {
+  width: 42mm !important;
+  height: 42mm !important;
+}
+
+/* Mẫu 3 - Developer: ảnh lớn hơn trong hero */
+.dev-left {
+  grid-template-columns: 42mm 1fr !important;
+}
+
+.dev-left .cv-photo {
+  width: 40mm !important;
+  height: 40mm !important;
+  border-radius: 20px !important;
+}
+
+/* Avatar nhỏ trong sidebar app cũng rõ hơn một chút */
+.mini-avatar {
+  width: 44px !important;
+  height: 44px !important;
+}

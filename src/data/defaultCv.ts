@@ -15,7 +15,7 @@ export const templateDescriptions: Record<TemplateId, string> = {
 export const starterTemplates: Record<TemplateId, CvData> = {
   it: {
     template: "it",
-    photoUrl: "",
+    photoUrl: "https://i.ibb.co/wrBTs6BP/image-1.png",
     fullName: "Đặng Minh Nhật",
     headline: "IT Support Trainee",
     subtitle: "Ứng tuyển vị trí Kỹ thuật IT / IT Support",
@@ -87,7 +87,7 @@ export const starterTemplates: Record<TemplateId, CvData> = {
 
   teacher: {
     template: "teacher",
-    photoUrl: "",
+    photoUrl: "https://i.ibb.co/wrBTs6BP/image-1.png",
     fullName: "Đặng Minh Nhật",
     headline: "Giáo viên Tin học - Gia sư Toán tư duy",
     subtitle: "Ứng tuyển Giáo viên Tin học / Gia sư Toán",
@@ -159,7 +159,7 @@ export const starterTemplates: Record<TemplateId, CvData> = {
 
   dev: {
     template: "dev",
-    photoUrl: "",
+    photoUrl: "https://i.ibb.co/wrBTs6BP/image-1.png",
     fullName: "Đặng Minh Nhật",
     headline: "Frontend / Fullstack Developer Fresher",
     subtitle: "Ứng tuyển Frontend Developer / Fullstack Fresher",
