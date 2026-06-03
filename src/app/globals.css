@@ -2129,3 +2129,4 @@ button, input, textarea { font: inherit; }
 }
 /* === CV RECENT MINI FIX END === */
 
+@import "./cv-studio-compact.css";

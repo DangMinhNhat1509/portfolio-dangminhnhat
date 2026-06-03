@@ -1,0 +1,282 @@
+/* CV Studio Compact Patch
+   Mục tiêu:
+   - Thu nhỏ sidebar trái thành rail icon
+   - Ẩn các mục chưa có tác dụng: CV đã lưu, Biểu tượng, Cài đặt, nâng cấp
+   - Không để panel thiết kế chiếm nguyên cột bên phải
+   - Preview CV rộng hơn, bớt rối
+*/
+
+/* Gỡ cảm giác app có 2 sidebar lớn */
+.studioSidebar,
+.cvSidebar,
+.cv-studio aside:first-child,
+.cv-studio-page aside:first-child,
+.cv-builder aside:first-child,
+.cv-template aside:first-child,
+.studioShell aside:first-child {
+  width: 76px !important;
+  min-width: 76px !important;
+  max-width: 76px !important;
+  padding: 18px 10px !important;
+  overflow: hidden !important;
+}
+
+/* Logo giữ lại, chữ CV Studio ẩn bớt cho gọn */
+.studioSidebar b,
+.cvSidebar b,
+.studioShell aside:first-child b,
+.cv-studio aside:first-child b,
+.cv-studio-page aside:first-child b,
+.cv-builder aside:first-child b,
+.cv-template aside:first-child b {
+  display: none !important;
+}
+
+/* Sidebar chỉ giữ icon, không còn chữ to */
+.studioSidebar span,
+.cvSidebar span,
+.studioShell aside:first-child span,
+.cv-studio aside:first-child span,
+.cv-studio-page aside:first-child span,
+.cv-builder aside:first-child span,
+.cv-template aside:first-child span {
+  display: none !important;
+}
+
+/* Nav sidebar: chỉ hiện 2 mục đầu là Kho mẫu + Trình chỉnh sửa */
+.studioShell aside:first-child nav > *:nth-child(n+3),
+.cv-studio aside:first-child nav > *:nth-child(n+3),
+.cv-studio-page aside:first-child nav > *:nth-child(n+3),
+.cv-builder aside:first-child nav > *:nth-child(n+3),
+.cv-template aside:first-child nav > *:nth-child(n+3) {
+  display: none !important;
+}
+
+/* Ẩn card nâng cấp và user footer vì hiện chưa có tác dụng */
+.studioShell aside:first-child nav ~ *,
+.cv-studio aside:first-child nav ~ *,
+.cv-studio-page aside:first-child nav ~ *,
+.cv-builder aside:first-child nav ~ *,
+.cv-template aside:first-child nav ~ * {
+  display: none !important;
+}
+
+/* Icon nav nhỏ, sạch */
+.studioShell aside:first-child a,
+.cv-studio aside:first-child a,
+.cv-studio-page aside:first-child a,
+.cv-builder aside:first-child a,
+.cv-template aside:first-child a,
+.studioShell aside:first-child button,
+.cv-studio aside:first-child button,
+.cv-studio-page aside:first-child button,
+.cv-builder aside:first-child button,
+.cv-template aside:first-child button {
+  width: 48px !important;
+  height: 44px !important;
+  min-height: 44px !important;
+  justify-content: center !important;
+  padding: 0 !important;
+  border-radius: 13px !important;
+}
+
+.studioShell aside:first-child svg,
+.cv-studio aside:first-child svg,
+.cv-studio-page aside:first-child svg,
+.cv-builder aside:first-child svg,
+.cv-template aside:first-child svg {
+  width: 19px !important;
+  height: 19px !important;
+}
+
+/* Topbar gọn lại */
+.cv-builder header,
+.cv-studio header,
+.cv-studio-page header,
+.studioShell header {
+  min-height: 56px !important;
+  padding: 10px 22px !important;
+}
+
+.cv-builder header button,
+.cv-studio header button,
+.cv-studio-page header button,
+.studioShell header button {
+  height: 34px !important;
+  min-height: 34px !important;
+  padding: 0 12px !important;
+  font-size: 12.5px !important;
+  border-radius: 9px !important;
+}
+
+/* Builder: bỏ cột thiết kế cố định bên phải */
+.cv-builder main,
+.cv-studio main,
+.studioShell main {
+  grid-template-columns: minmax(300px, 350px) minmax(640px, 1fr) !important;
+  gap: 14px !important;
+  overflow-x: hidden !important;
+}
+
+/* Panel nội dung nhỏ gọn hơn */
+.cvContentPanel,
+.cvEditorPanel,
+.cvLeftPanel,
+.cv-builder main > section:first-child {
+  max-height: calc(100vh - 92px) !important;
+  overflow: auto !important;
+  padding: 16px !important;
+}
+
+/* Preview chiếm không gian chính */
+.cvCanvas {
+  min-width: 0 !important;
+  max-width: 100% !important;
+  overflow: auto !important;
+  padding: 12px !important;
+}
+
+/* Làm preview tự co, tránh bị cắt ngang quá mạnh */
+.cvPreviewPage {
+  transform-origin: top center !important;
+  max-width: 100% !important;
+}
+
+/* Panel thiết kế đổi thành panel nổi, không chiếm nguyên cột */
+.cvDesignPanel {
+  position: fixed !important;
+  right: 18px !important;
+  top: 86px !important;
+  z-index: 60 !important;
+
+  width: 46px !important;
+  height: 46px !important;
+  min-width: 46px !important;
+  max-width: 46px !important;
+  max-height: 46px !important;
+
+  overflow: hidden !important;
+  padding: 0 !important;
+  border-radius: 14px !important;
+  background: rgba(15, 23, 42, 0.92) !important;
+  border: 1px solid rgba(250, 204, 21, 0.32) !important;
+  box-shadow: 0 14px 38px rgba(0, 0, 0, 0.34) !important;
+  backdrop-filter: blur(14px);
+}
+
+/* Khi rê chuột hoặc click vào input bên trong thì mở panel thiết kế */
+.cvDesignPanel:hover,
+.cvDesignPanel:focus-within {
+  width: 292px !important;
+  max-width: 292px !important;
+  height: auto !important;
+  max-height: calc(100vh - 110px) !important;
+  overflow: auto !important;
+  padding: 16px !important;
+}
+
+/* Khi đóng, chỉ hiện như nút nhỏ */
+.cvDesignPanel .panelTitle {
+  width: 292px !important;
+  min-height: 46px !important;
+}
+
+.cvDesignPanel .panelTitle h2 {
+  font-size: 0 !important;
+}
+
+.cvDesignPanel .panelTitle h2::before {
+  content: "⚙";
+  display: grid;
+  place-items: center;
+  width: 44px;
+  height: 44px;
+  font-size: 18px;
+  color: #facc15;
+}
+
+.cvDesignPanel:hover .panelTitle h2,
+.cvDesignPanel:focus-within .panelTitle h2 {
+  font-size: 18px !important;
+}
+
+.cvDesignPanel:hover .panelTitle h2::before,
+.cvDesignPanel:focus-within .panelTitle h2::before {
+  content: "";
+  display: none;
+}
+
+/* Nội dung thiết kế chỉ hiện khi panel mở */
+.cvDesignPanel > *:not(.panelTitle) {
+  opacity: 0 !important;
+  pointer-events: none !important;
+}
+
+.cvDesignPanel:hover > *:not(.panelTitle),
+.cvDesignPanel:focus-within > *:not(.panelTitle) {
+  opacity: 1 !important;
+  pointer-events: auto !important;
+}
+
+/* Giảm chữ đậm/thô trong form */
+.cv-builder h2,
+.cv-builder h3,
+.cv-builder b,
+.cv-builder strong {
+  font-weight: 650 !important;
+}
+
+.cv-builder input,
+.cv-builder textarea,
+.cv-builder select {
+  font-weight: 500 !important;
+  font-size: 12.5px !important;
+}
+
+/* Nút vàng bớt to */
+.cv-builder button,
+.cv-template button {
+  font-weight: 600 !important;
+  letter-spacing: -0.01em !important;
+}
+
+/* Template page cũng bỏ sidebar to */
+.cv-template main,
+.cv-studio-page main {
+  padding-left: 22px !important;
+  padding-right: 22px !important;
+}
+
+/* Mobile/tablet: không dùng panel nổi bên phải */
+@media (max-width: 1024px) {
+  .cv-builder main,
+  .cv-studio main,
+  .studioShell main {
+    display: block !important;
+  }
+
+  .cvDesignPanel {
+    position: static !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    height: auto !important;
+    max-height: none !important;
+    overflow: visible !important;
+    padding: 14px !important;
+    margin-top: 14px !important;
+  }
+
+  .cvDesignPanel > * {
+    opacity: 1 !important;
+    pointer-events: auto !important;
+  }
+
+  .cvDesignPanel .panelTitle h2 {
+    font-size: 18px !important;
+  }
+
+  .cvDesignPanel .panelTitle h2::before {
+    content: "" !important;
+    display: none !important;
+  }
+}

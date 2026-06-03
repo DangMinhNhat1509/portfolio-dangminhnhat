@@ -1,0 +1,306 @@
+/* CV Studio UI Polish Patch 1
+   Mục tiêu: làm nút/input/panel gọn hơn, bớt thô, giảm tràn ngang.
+   Không đổi logic CV, không đổi dữ liệu, không đổi export PDF.
+*/
+
+:root {
+  --cv-ui-bg: #070b12;
+  --cv-ui-panel: rgba(17, 24, 39, 0.78);
+  --cv-ui-panel-2: rgba(15, 23, 42, 0.72);
+  --cv-ui-border: rgba(148, 163, 184, 0.16);
+  --cv-ui-border-strong: rgba(250, 204, 21, 0.34);
+  --cv-ui-text: #eef2ff;
+  --cv-ui-muted: #94a3b8;
+  --cv-ui-accent: #facc15;
+  --cv-ui-accent-2: #f59e0b;
+  --cv-ui-radius: 12px;
+  --cv-ui-radius-sm: 9px;
+  --cv-ui-shadow: 0 20px 70px rgba(0, 0, 0, 0.32);
+}
+
+/* Chỉ tác động mạnh khi đang ở UI CV Studio */
+.cv-studio,
+.cv-studio *,
+.cv-studio-page,
+.cv-studio-page *,
+.cv-builder,
+.cv-builder *,
+.cv-template,
+.cv-template *,
+.cv-shell,
+.cv-shell * {
+  box-sizing: border-box;
+}
+
+/* Khung app */
+.cv-studio,
+.cv-studio-page,
+.cv-builder,
+.cv-template,
+.cv-shell {
+  background:
+    radial-gradient(circle at top left, rgba(250, 204, 21, 0.08), transparent 28rem),
+    radial-gradient(circle at top right, rgba(56, 189, 248, 0.06), transparent 24rem),
+    var(--cv-ui-bg) !important;
+  color: var(--cv-ui-text);
+  min-height: 100vh;
+  overflow-x: hidden;
+}
+
+/* Panel/card chung */
+.cv-studio aside,
+.cv-studio section,
+.cv-studio main,
+.cv-studio-page aside,
+.cv-studio-page section,
+.cv-studio-page main,
+.cv-builder aside,
+.cv-builder section,
+.cv-builder main,
+.cv-template aside,
+.cv-template section,
+.cv-template main {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(250, 204, 21, 0.45) rgba(148, 163, 184, 0.08);
+}
+
+.cv-studio ::-webkit-scrollbar,
+.cv-studio-page ::-webkit-scrollbar,
+.cv-builder ::-webkit-scrollbar,
+.cv-template ::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+.cv-studio ::-webkit-scrollbar-thumb,
+.cv-studio-page ::-webkit-scrollbar-thumb,
+.cv-builder ::-webkit-scrollbar-thumb,
+.cv-template ::-webkit-scrollbar-thumb {
+  background: rgba(250, 204, 21, 0.38);
+  border-radius: 999px;
+}
+
+.cv-studio ::-webkit-scrollbar-track,
+.cv-studio-page ::-webkit-scrollbar-track,
+.cv-builder ::-webkit-scrollbar-track,
+.cv-template ::-webkit-scrollbar-track {
+  background: rgba(148, 163, 184, 0.08);
+}
+
+/* Nút: nhỏ hơn, mỏng hơn, chuyên nghiệp hơn */
+.cv-studio button,
+.cv-studio-page button,
+.cv-builder button,
+.cv-template button {
+  min-height: 34px;
+  border-radius: 10px !important;
+  font-size: 13px !important;
+  font-weight: 650 !important;
+  letter-spacing: -0.01em;
+  padding: 0 13px !important;
+  border-width: 1px !important;
+  box-shadow: none !important;
+  transition:
+    transform 0.14s ease,
+    border-color 0.14s ease,
+    background-color 0.14s ease,
+    opacity 0.14s ease;
+}
+
+.cv-studio button:hover,
+.cv-studio-page button:hover,
+.cv-builder button:hover,
+.cv-template button:hover {
+  transform: translateY(-1px);
+}
+
+.cv-studio button:active,
+.cv-studio-page button:active,
+.cv-builder button:active,
+.cv-template button:active {
+  transform: translateY(0);
+}
+
+/* Nút vàng chính: bớt chói, gọn hơn */
+.cv-studio button[class*="yellow"],
+.cv-studio button[class*="amber"],
+.cv-studio-page button[class*="yellow"],
+.cv-studio-page button[class*="amber"],
+.cv-builder button[class*="yellow"],
+.cv-builder button[class*="amber"],
+.cv-template button[class*="yellow"],
+.cv-template button[class*="amber"] {
+  background: linear-gradient(180deg, #facc15, #f59e0b) !important;
+  color: #111827 !important;
+  border-color: rgba(250, 204, 21, 0.72) !important;
+}
+
+/* Input/select/textarea: giảm thô */
+.cv-studio input,
+.cv-studio textarea,
+.cv-studio select,
+.cv-studio-page input,
+.cv-studio-page textarea,
+.cv-studio-page select,
+.cv-builder input,
+.cv-builder textarea,
+.cv-builder select,
+.cv-template input,
+.cv-template textarea,
+.cv-template select {
+  min-height: 36px;
+  border-radius: 10px !important;
+  font-size: 13px !important;
+  padding: 8px 11px !important;
+  background: rgba(2, 6, 23, 0.46) !important;
+  border: 1px solid rgba(148, 163, 184, 0.16) !important;
+  color: #f8fafc !important;
+  outline: none !important;
+}
+
+.cv-studio input:focus,
+.cv-studio textarea:focus,
+.cv-studio select:focus,
+.cv-studio-page input:focus,
+.cv-studio-page textarea:focus,
+.cv-studio-page select:focus,
+.cv-builder input:focus,
+.cv-builder textarea:focus,
+.cv-builder select:focus,
+.cv-template input:focus,
+.cv-template textarea:focus,
+.cv-template select:focus {
+  border-color: rgba(250, 204, 21, 0.58) !important;
+  box-shadow: 0 0 0 3px rgba(250, 204, 21, 0.10) !important;
+}
+
+/* Typography trong app: đỡ nặng */
+.cv-studio h1,
+.cv-studio h2,
+.cv-studio h3,
+.cv-studio-page h1,
+.cv-studio-page h2,
+.cv-studio-page h3,
+.cv-builder h1,
+.cv-builder h2,
+.cv-builder h3,
+.cv-template h1,
+.cv-template h2,
+.cv-template h3 {
+  letter-spacing: -0.035em;
+}
+
+.cv-studio p,
+.cv-studio span,
+.cv-studio label,
+.cv-studio-page p,
+.cv-studio-page span,
+.cv-studio-page label,
+.cv-builder p,
+.cv-builder span,
+.cv-builder label,
+.cv-template p,
+.cv-template span,
+.cv-template label {
+  line-height: 1.45;
+}
+
+/* Card/panel bo gọn hơn */
+.cv-studio [class*="rounded"],
+.cv-studio-page [class*="rounded"],
+.cv-builder [class*="rounded"],
+.cv-template [class*="rounded"] {
+  border-radius: var(--cv-ui-radius) !important;
+}
+
+/* Sidebar active: dùng vàng làm điểm nhấn, không phủ quá nặng */
+.cv-studio a,
+.cv-studio-page a,
+.cv-builder a,
+.cv-template a {
+  transition:
+    background-color 0.14s ease,
+    color 0.14s ease,
+    border-color 0.14s ease,
+    transform 0.14s ease;
+}
+
+/* Preview CV: rõ hơn nhưng không quá gắt */
+.cv-studio [class*="shadow"],
+.cv-studio-page [class*="shadow"],
+.cv-builder [class*="shadow"],
+.cv-template [class*="shadow"] {
+  box-shadow: var(--cv-ui-shadow) !important;
+}
+
+/* Topbar gọn lại */
+.cv-studio header,
+.cv-studio-page header,
+.cv-builder header,
+.cv-template header {
+  min-height: 58px;
+}
+
+/* Slider range nhỏ, hiện đại hơn */
+.cv-studio input[type="range"],
+.cv-studio-page input[type="range"],
+.cv-builder input[type="range"],
+.cv-template input[type="range"] {
+  height: 4px !important;
+  min-height: 4px !important;
+  padding: 0 !important;
+  accent-color: var(--cv-ui-accent);
+}
+
+/* Template cards gọn hơn */
+.cv-template article,
+.cv-template [class*="card"],
+.cv-studio-page article,
+.cv-studio-page [class*="card"] {
+  border-color: rgba(148, 163, 184, 0.14) !important;
+}
+
+/* Giảm tràn ngang khó chịu */
+@media (max-width: 1280px) {
+  .cv-studio,
+  .cv-studio-page,
+  .cv-builder,
+  .cv-template,
+  .cv-shell {
+    overflow-x: hidden !important;
+  }
+
+  .cv-studio button,
+  .cv-studio-page button,
+  .cv-builder button,
+  .cv-template button {
+    min-height: 32px;
+    padding-inline: 10px !important;
+    font-size: 12.5px !important;
+  }
+}
+
+@media (max-width: 900px) {
+  .cv-studio button,
+  .cv-studio-page button,
+  .cv-builder button,
+  .cv-template button {
+    min-height: 34px;
+    width: auto;
+  }
+
+  .cv-studio input,
+  .cv-studio textarea,
+  .cv-studio select,
+  .cv-studio-page input,
+  .cv-studio-page textarea,
+  .cv-studio-page select,
+  .cv-builder input,
+  .cv-builder textarea,
+  .cv-builder select,
+  .cv-template input,
+  .cv-template textarea,
+  .cv-template select {
+    min-height: 38px;
+  }
+}

@@ -1,0 +1,752 @@
+/* CV Studio Modern UI Patch 2
+   Mục tiêu:
+   - Bỏ cảm giác nút to/thô
+   - Giảm chữ đậm toàn app
+   - Làm layout thoáng hơn, bớt vàng
+   - Giảm overflow ngang
+   - Giữ nguyên logic CV / localStorage / PDF
+*/
+
+:root {
+  --studio-bg: #080c13;
+  --studio-bg-soft: #0b111b;
+  --studio-panel: rgba(15, 23, 42, 0.72);
+  --studio-panel-solid: #111827;
+  --studio-card: rgba(17, 24, 39, 0.68);
+  --studio-card-hover: rgba(30, 41, 59, 0.72);
+  --studio-border: rgba(148, 163, 184, 0.14);
+  --studio-border-soft: rgba(148, 163, 184, 0.09);
+  --studio-text: #e5e7eb;
+  --studio-text-soft: #cbd5e1;
+  --studio-muted: #8b98aa;
+  --studio-faint: #64748b;
+  --studio-accent: #facc15;
+  --studio-accent-soft: rgba(250, 204, 21, 0.12);
+  --studio-accent-border: rgba(250, 204, 21, 0.36);
+  --studio-danger: #ef4444;
+  --studio-radius: 14px;
+  --studio-radius-sm: 10px;
+  --studio-shadow: 0 18px 55px rgba(0, 0, 0, 0.28);
+}
+
+/* ===== Global scope ===== */
+
+body {
+  overflow-x: hidden;
+}
+
+.cvStudio,
+.cv-studio,
+.cv-studio-page,
+.cv-builder,
+.cv-template,
+.cv-shell,
+.studioShell {
+  min-height: 100vh;
+  overflow-x: hidden !important;
+  background:
+    radial-gradient(circle at 20% 0%, rgba(250, 204, 21, 0.06), transparent 26rem),
+    radial-gradient(circle at 90% 10%, rgba(59, 130, 246, 0.055), transparent 24rem),
+    var(--studio-bg) !important;
+  color: var(--studio-text);
+  font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+}
+
+.cvStudio *,
+.cv-studio *,
+.cv-studio-page *,
+.cv-builder *,
+.cv-template *,
+.cv-shell *,
+.studioShell * {
+  box-sizing: border-box;
+}
+
+/* Giảm độ nặng chữ tổng thể */
+.cvStudio b,
+.cv-studio b,
+.cv-studio-page b,
+.cv-builder b,
+.cv-template b,
+.studioShell b,
+.cvStudio strong,
+.cv-studio strong,
+.cv-studio-page strong,
+.cv-builder strong,
+.cv-template strong,
+.studioShell strong {
+  font-weight: 650 !important;
+}
+
+.cvStudio h1,
+.cvStudio h2,
+.cvStudio h3,
+.cv-studio h1,
+.cv-studio h2,
+.cv-studio h3,
+.cv-studio-page h1,
+.cv-studio-page h2,
+.cv-studio-page h3,
+.cv-builder h1,
+.cv-builder h2,
+.cv-builder h3,
+.cv-template h1,
+.cv-template h2,
+.cv-template h3,
+.studioShell h1,
+.studioShell h2,
+.studioShell h3 {
+  letter-spacing: -0.035em;
+  font-weight: 720 !important;
+}
+
+/* ===== Buttons: chuyên nghiệp hơn, nhỏ hơn ===== */
+
+.cvStudio button,
+.cv-studio button,
+.cv-studio-page button,
+.cv-builder button,
+.cv-template button,
+.studioShell button {
+  min-height: 32px !important;
+  border-radius: 9px !important;
+  padding: 0 11px !important;
+  font-size: 12.5px !important;
+  font-weight: 600 !important;
+  letter-spacing: -0.01em !important;
+  border: 1px solid var(--studio-border) !important;
+  background: rgba(15, 23, 42, 0.58) !important;
+  color: var(--studio-text-soft) !important;
+  box-shadow: none !important;
+  text-shadow: none !important;
+  transition:
+    background-color 0.15s ease,
+    border-color 0.15s ease,
+    color 0.15s ease,
+    transform 0.12s ease,
+    opacity 0.12s ease;
+}
+
+.cvStudio button:hover,
+.cv-studio button:hover,
+.cv-studio-page button:hover,
+.cv-builder button:hover,
+.cv-template button:hover,
+.studioShell button:hover {
+  transform: translateY(-1px);
+  background: rgba(30, 41, 59, 0.72) !important;
+  border-color: rgba(148, 163, 184, 0.22) !important;
+  color: #f8fafc !important;
+}
+
+.cvStudio button:active,
+.cv-studio button:active,
+.cv-studio-page button:active,
+.cv-builder button:active,
+.cv-template button:active,
+.studioShell button:active {
+  transform: translateY(0);
+}
+
+/* Nút chính màu vàng: nhỏ, phẳng, giống SaaS hơn */
+.cvStudio button[class*="primary"],
+.cvStudio button[class*="yellow"],
+.cvStudio button[class*="amber"],
+.cv-studio button[class*="primary"],
+.cv-studio button[class*="yellow"],
+.cv-studio button[class*="amber"],
+.cv-studio-page button[class*="primary"],
+.cv-studio-page button[class*="yellow"],
+.cv-studio-page button[class*="amber"],
+.cv-builder button[class*="primary"],
+.cv-builder button[class*="yellow"],
+.cv-builder button[class*="amber"],
+.cv-template button[class*="primary"],
+.cv-template button[class*="yellow"],
+.cv-template button[class*="amber"],
+.studioShell button[class*="primary"],
+.studioShell button[class*="yellow"],
+.studioShell button[class*="amber"] {
+  background: #facc15 !important;
+  color: #111827 !important;
+  border-color: rgba(250, 204, 21, 0.65) !important;
+  box-shadow: 0 8px 18px rgba(250, 204, 21, 0.12) !important;
+}
+
+.cvStudio button svg,
+.cv-studio button svg,
+.cv-studio-page button svg,
+.cv-builder button svg,
+.cv-template button svg,
+.studioShell button svg {
+  width: 15px !important;
+  height: 15px !important;
+  stroke-width: 2;
+}
+
+/* ===== Inputs ===== */
+
+.cvStudio input,
+.cvStudio textarea,
+.cvStudio select,
+.cv-studio input,
+.cv-studio textarea,
+.cv-studio select,
+.cv-studio-page input,
+.cv-studio-page textarea,
+.cv-studio-page select,
+.cv-builder input,
+.cv-builder textarea,
+.cv-builder select,
+.cv-template input,
+.cv-template textarea,
+.cv-template select,
+.studioShell input,
+.studioShell textarea,
+.studioShell select {
+  min-height: 34px !important;
+  border-radius: 9px !important;
+  padding: 7px 10px !important;
+  font-size: 12.5px !important;
+  font-weight: 500 !important;
+  color: #e5e7eb !important;
+  background: rgba(2, 6, 23, 0.36) !important;
+  border: 1px solid var(--studio-border) !important;
+  outline: none !important;
+  box-shadow: none !important;
+}
+
+.cvStudio textarea,
+.cv-studio textarea,
+.cv-studio-page textarea,
+.cv-builder textarea,
+.cv-template textarea,
+.studioShell textarea {
+  line-height: 1.45;
+}
+
+.cvStudio input:focus,
+.cvStudio textarea:focus,
+.cvStudio select:focus,
+.cv-studio input:focus,
+.cv-studio textarea:focus,
+.cv-studio select:focus,
+.cv-studio-page input:focus,
+.cv-studio-page textarea:focus,
+.cv-studio-page select:focus,
+.cv-builder input:focus,
+.cv-builder textarea:focus,
+.cv-builder select:focus,
+.cv-template input:focus,
+.cv-template textarea:focus,
+.cv-template select:focus,
+.studioShell input:focus,
+.studioShell textarea:focus,
+.studioShell select:focus {
+  border-color: rgba(250, 204, 21, 0.42) !important;
+  box-shadow: 0 0 0 3px rgba(250, 204, 21, 0.08) !important;
+}
+
+/* ===== Sidebar ===== */
+
+.studioSidebar,
+.cvSidebar,
+.cv-studio aside:first-child,
+.cv-studio-page aside:first-child,
+.cv-builder aside:first-child,
+.cv-template aside:first-child,
+.studioShell aside:first-child {
+  width: 250px !important;
+  min-width: 250px !important;
+  max-width: 250px !important;
+  background: rgba(3, 7, 18, 0.72) !important;
+  border-right: 1px solid var(--studio-border-soft) !important;
+}
+
+.studioSidebar a,
+.studioSidebar button,
+.cvSidebar a,
+.cvSidebar button,
+.studioShell aside:first-child a,
+.studioShell aside:first-child button {
+  min-height: 38px !important;
+  border-radius: 10px !important;
+  font-size: 13px !important;
+  font-weight: 610 !important;
+}
+
+.studioSidebar .active,
+.cvSidebar .active,
+.studioShell aside:first-child .active,
+.studioShell aside:first-child a[aria-current="page"] {
+  background: rgba(250, 204, 21, 0.09) !important;
+  border-color: rgba(250, 204, 21, 0.24) !important;
+  color: #fef3c7 !important;
+}
+
+/* ===== Header / topbar ===== */
+
+.studioTopbar,
+.builderHeader,
+.templatesHeader,
+.cv-studio header,
+.cv-studio-page header,
+.cv-builder header,
+.cv-template header,
+.studioShell header {
+  min-height: 56px !important;
+  border-bottom: 1px solid var(--studio-border-soft) !important;
+  background: rgba(8, 12, 19, 0.78) !important;
+  backdrop-filter: blur(14px);
+}
+
+.studioTopbar button,
+.builderHeader button,
+.templatesHeader button,
+.cv-studio header button,
+.cv-studio-page header button,
+.cv-builder header button,
+.cv-template header button,
+.studioShell header button {
+  min-height: 34px !important;
+  padding-inline: 12px !important;
+}
+
+/* ===== Templates page ===== */
+
+.templatePage,
+.templatesPage,
+.cvTemplatesPage {
+  width: 100%;
+  min-width: 0;
+  overflow-x: hidden;
+}
+
+.templateGrid,
+.templatesGrid,
+.cvTemplateGrid {
+  display: grid !important;
+  grid-template-columns: repeat(auto-fit, minmax(230px, 1fr)) !important;
+  gap: 18px !important;
+  width: 100% !important;
+  min-width: 0 !important;
+}
+
+.templateCard,
+.cvTemplateCard,
+.templatesPage article,
+.cv-template article {
+  min-width: 0 !important;
+  border-radius: 16px !important;
+  background: rgba(15, 23, 42, 0.62) !important;
+  border: 1px solid var(--studio-border) !important;
+  overflow: hidden !important;
+  box-shadow: none !important;
+}
+
+.templateCard:hover,
+.cvTemplateCard:hover,
+.templatesPage article:hover,
+.cv-template article:hover {
+  background: rgba(17, 24, 39, 0.78) !important;
+  border-color: rgba(250, 204, 21, 0.22) !important;
+}
+
+.templateCard h3,
+.cvTemplateCard h3,
+.templatesPage article h3,
+.cv-template article h3 {
+  font-size: 16px !important;
+  line-height: 1.25 !important;
+  margin-bottom: 6px !important;
+}
+
+.templateCard p,
+.cvTemplateCard p,
+.templatesPage article p,
+.cv-template article p {
+  font-size: 13px !important;
+  line-height: 1.45 !important;
+  color: var(--studio-muted) !important;
+}
+
+/* Hình mẫu CV bớt cartoon: nhỏ và sạch hơn */
+.miniResume,
+.templatePreview,
+.cvTemplatePreview {
+  height: 255px !important;
+  border-radius: 13px !important;
+  background: #f8fafc !important;
+  box-shadow: inset 0 0 0 1px rgba(15, 23, 42, 0.06) !important;
+}
+
+.templateCard button,
+.cvTemplateCard button,
+.templatesPage article button,
+.cv-template article button {
+  min-height: 31px !important;
+  padding-inline: 10px !important;
+  font-size: 12px !important;
+}
+
+/* Filter pills */
+.templateFilters button,
+.templatesFilter button,
+.cv-template main > div button {
+  min-height: 32px !important;
+  border-radius: 999px !important;
+  padding-inline: 14px !important;
+}
+
+/* ===== Builder layout ===== */
+
+.builderWorkspace,
+.builderLayout,
+.cvBuilderLayout,
+.cvEditorGrid,
+.cv-studio main,
+.cv-builder main {
+  min-width: 0 !important;
+  max-width: 100% !important;
+  overflow-x: hidden !important;
+}
+
+/* Layout 3 cột: cho panel trái rộng hơn để không vỡ chữ */
+@media (min-width: 1280px) {
+  .builderWorkspace,
+  .builderLayout,
+  .cvBuilderLayout,
+  .cvEditorGrid,
+  .cv-builder main {
+    display: grid !important;
+    grid-template-columns: minmax(330px, 390px) minmax(520px, 1fr) minmax(270px, 330px) !important;
+    gap: 16px !important;
+    align-items: start !important;
+  }
+}
+
+@media (min-width: 1024px) and (max-width: 1279px) {
+  .builderWorkspace,
+  .builderLayout,
+  .cvBuilderLayout,
+  .cvEditorGrid,
+  .cv-builder main {
+    display: grid !important;
+    grid-template-columns: minmax(320px, 360px) minmax(520px, 1fr) !important;
+    gap: 14px !important;
+  }
+
+  .cvDesignPanel {
+    grid-column: 1 / -1 !important;
+  }
+}
+
+/* Panel chỉnh sửa */
+.cvContentPanel,
+.cvEditorPanel,
+.cvLeftPanel,
+.cv-builder main > section:first-child {
+  min-width: 0 !important;
+  max-width: 100% !important;
+  background: rgba(15, 23, 42, 0.58) !important;
+  border: 1px solid var(--studio-border) !important;
+  border-radius: 16px !important;
+  box-shadow: none !important;
+}
+
+.cvContentPanel h2,
+.cvEditorPanel h2,
+.cvLeftPanel h2,
+.cv-builder main > section:first-child h2 {
+  font-size: 18px !important;
+}
+
+.cvContentPanel p,
+.cvEditorPanel p,
+.cvLeftPanel p,
+.cv-builder main > section:first-child p {
+  color: var(--studio-muted) !important;
+  font-size: 13px !important;
+}
+
+/* Section buttons trong panel trái */
+.sectionButton,
+.cvSectionButton,
+.cv-builder main > section:first-child article,
+.cv-builder main > section:first-child [role="button"] {
+  border-radius: 12px !important;
+  background: rgba(15, 23, 42, 0.46) !important;
+  border: 1px solid var(--studio-border) !important;
+  min-height: 44px !important;
+  box-shadow: none !important;
+}
+
+.sectionButton:hover,
+.cvSectionButton:hover,
+.cv-builder main > section:first-child article:hover {
+  background: rgba(30, 41, 59, 0.62) !important;
+  border-color: rgba(148, 163, 184, 0.2) !important;
+}
+
+.sectionButton span,
+.cvSectionButton span {
+  font-size: 13px !important;
+  line-height: 1.25 !important;
+}
+
+.sectionButton svg,
+.cvSectionButton svg {
+  width: 15px !important;
+  height: 15px !important;
+}
+
+/* Card thông tin cá nhân và item editor */
+.profileCard,
+.itemEditor,
+.cv-builder .profileCard,
+.cv-builder .itemEditor {
+  border-radius: 14px !important;
+  border: 1px solid var(--studio-border) !important;
+  background: rgba(2, 6, 23, 0.24) !important;
+  box-shadow: none !important;
+}
+
+.itemEditorTop {
+  gap: 10px !important;
+}
+
+.itemEditorTop button,
+.bulletTitle button,
+.addItemBtn {
+  min-height: 30px !important;
+}
+
+.formGrid {
+  gap: 10px !important;
+}
+
+.formGrid label {
+  font-size: 12px !important;
+  color: var(--studio-muted) !important;
+}
+
+.bulletInput {
+  gap: 8px !important;
+}
+
+.bulletInput button {
+  width: 30px !important;
+  min-width: 30px !important;
+  padding: 0 !important;
+}
+
+/* Preview area */
+.cvCanvas {
+  min-width: 0 !important;
+  overflow-x: hidden !important;
+  background: rgba(15, 23, 42, 0.34) !important;
+  border: 1px solid var(--studio-border) !important;
+  border-radius: 16px !important;
+  box-shadow: none !important;
+}
+
+.cvCanvasToolbar {
+  min-height: 42px !important;
+  padding: 8px 12px !important;
+  color: var(--studio-muted) !important;
+  font-size: 12.5px !important;
+  border-bottom: 1px solid var(--studio-border-soft) !important;
+}
+
+.cvCanvasToolbar button {
+  min-height: 28px !important;
+  min-width: 28px !important;
+  padding: 0 8px !important;
+}
+
+/* CV preview tự co, không đẩy tràn ngang */
+.cvPreviewPage {
+  max-width: min(100%, 794px) !important;
+  transform-origin: top center !important;
+  box-shadow: 0 18px 60px rgba(0, 0, 0, 0.32) !important;
+}
+
+/* Panel thiết kế */
+.cvDesignPanel {
+  min-width: 0 !important;
+  background: rgba(15, 23, 42, 0.54) !important;
+  border: 1px solid var(--studio-border) !important;
+  border-radius: 16px !important;
+  box-shadow: none !important;
+}
+
+.cvDesignPanel h2 {
+  font-size: 18px !important;
+}
+
+.cvDesignPanel p,
+.cvDesignPanel label,
+.styleRange span {
+  font-size: 12.5px !important;
+  color: var(--studio-muted) !important;
+}
+
+.styleRange {
+  gap: 8px !important;
+}
+
+.styleRange input[type="range"],
+.cvDesignPanel input[type="range"] {
+  min-height: 4px !important;
+  height: 4px !important;
+  padding: 0 !important;
+  accent-color: var(--studio-accent);
+}
+
+.colorGrid {
+  gap: 8px !important;
+}
+
+.colorGrid button {
+  width: 26px !important;
+  height: 26px !important;
+  min-height: 26px !important;
+  min-width: 26px !important;
+  border-radius: 999px !important;
+  padding: 0 !important;
+}
+
+.toggleList {
+  gap: 8px !important;
+}
+
+.toggleList button {
+  min-height: 32px !important;
+  font-size: 12px !important;
+}
+
+.toggleList button.on,
+.cvDesignPanel button.on,
+.colorGrid button.active {
+  background: var(--studio-accent-soft) !important;
+  border-color: var(--studio-accent-border) !important;
+  color: #fef3c7 !important;
+}
+
+/* Scrollbar gọn hơn */
+.cvStudio ::-webkit-scrollbar,
+.cv-studio ::-webkit-scrollbar,
+.cv-studio-page ::-webkit-scrollbar,
+.cv-builder ::-webkit-scrollbar,
+.cv-template ::-webkit-scrollbar,
+.studioShell ::-webkit-scrollbar {
+  width: 7px;
+  height: 7px;
+}
+
+.cvStudio ::-webkit-scrollbar-thumb,
+.cv-studio ::-webkit-scrollbar-thumb,
+.cv-studio-page ::-webkit-scrollbar-thumb,
+.cv-builder ::-webkit-scrollbar-thumb,
+.cv-template ::-webkit-scrollbar-thumb,
+.studioShell ::-webkit-scrollbar-thumb {
+  background: rgba(148, 163, 184, 0.28);
+  border-radius: 999px;
+}
+
+.cvStudio ::-webkit-scrollbar-track,
+.cv-studio ::-webkit-scrollbar-track,
+.cv-studio-page ::-webkit-scrollbar-track,
+.cv-builder ::-webkit-scrollbar-track,
+.cv-template ::-webkit-scrollbar-track,
+.studioShell ::-webkit-scrollbar-track {
+  background: rgba(15, 23, 42, 0.18);
+}
+
+/* ===== Responsive ===== */
+
+@media (max-width: 1180px) {
+  .studioSidebar,
+  .cvSidebar,
+  .cv-studio aside:first-child,
+  .cv-studio-page aside:first-child,
+  .cv-builder aside:first-child,
+  .cv-template aside:first-child,
+  .studioShell aside:first-child {
+    width: 220px !important;
+    min-width: 220px !important;
+    max-width: 220px !important;
+  }
+
+  .templateGrid,
+  .templatesGrid,
+  .cvTemplateGrid {
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)) !important;
+  }
+
+  .miniResume,
+  .templatePreview,
+  .cvTemplatePreview {
+    height: 230px !important;
+  }
+}
+
+@media (max-width: 900px) {
+  .studioSidebar,
+  .cvSidebar,
+  .cv-studio aside:first-child,
+  .cv-studio-page aside:first-child,
+  .cv-builder aside:first-child,
+  .cv-template aside:first-child,
+  .studioShell aside:first-child {
+    width: 74px !important;
+    min-width: 74px !important;
+    max-width: 74px !important;
+  }
+
+  .studioSidebar span,
+  .studioSidebar b:not(:first-child),
+  .cvSidebar span,
+  .studioShell aside:first-child span {
+    display: none !important;
+  }
+
+  .builderWorkspace,
+  .builderLayout,
+  .cvBuilderLayout,
+  .cvEditorGrid,
+  .cv-builder main {
+    display: block !important;
+  }
+
+  .cvContentPanel,
+  .cvCanvas,
+  .cvDesignPanel,
+  .cv-builder main > section {
+    margin-bottom: 14px !important;
+  }
+}
+
+@media print {
+  .studioSidebar,
+  .cvSidebar,
+  .studioTopbar,
+  .builderHeader,
+  .templatesHeader,
+  .cvContentPanel,
+  .cvEditorPanel,
+  .cvDesignPanel,
+  .cvCanvasToolbar {
+    display: none !important;
+  }
+
+  .cvCanvas {
+    border: 0 !important;
+    background: white !important;
+  }
+
+  .cvPreviewPage {
+    box-shadow: none !important;
+    max-width: 100% !important;
+  }
+}
