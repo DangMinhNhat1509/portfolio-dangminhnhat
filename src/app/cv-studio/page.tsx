@@ -6,6 +6,7 @@ import {
   useMemo,
   useState,
   type CSSProperties,
+  type ChangeEvent,
   type ReactNode,
 } from "react";
 import styles from "./cv-studio.module.css";
@@ -31,7 +32,8 @@ type TemplateKey =
   | "brown"
   | "blackGold"
   | "lavender"
-  | "atsSimple";
+  | "atsSimple"
+  | "customHtml";
 
 type AvatarShape = "circle" | "rounded" | "square" | "portrait";
 type SectionKey =
@@ -233,6 +235,11 @@ const templateMeta: Record<
     desc: "Một cột cực dễ đọc",
     note: "Hợp nộp hệ thống tuyển dụng tự động.",
   },
+  customHtml: {
+    name: "HTML Upload",
+    desc: "Tải mẫu HTML riêng",
+    note: "Dùng file HTML có placeholder để đổi giao diện CV.",
+  },
 };
 
 
@@ -264,6 +271,7 @@ const templateClassMap: Record<TemplateKey, string> = {
   blackGold: styles.blackGoldTemplate,
   lavender: styles.lavenderTemplate,
   atsSimple: styles.atsSimpleTemplate,
+  customHtml: styles.customHtmlTemplate,
 };
 
 const avatarShapeClassMap: Record<AvatarShape, string> = {
@@ -473,11 +481,135 @@ function parseQuickText(text: string, currentCv: CVData): CVData {
   };
 }
 
+
+function escapeHtml(value: string) {
+  return value
+    .replaceAll("&", "&amp;")
+    .replaceAll("<", "&lt;")
+    .replaceAll(">", "&gt;")
+    .replaceAll('"', "&quot;")
+    .replaceAll("'", "&#039;");
+}
+
+function nl2br(value: string) {
+  return escapeHtml(value).replace(/\n/g, "<br />");
+}
+
+function sanitizeUploadedHtml(html: string) {
+  return html
+    .replace(/<script[\s\S]*?>[\s\S]*?<\/script>/gi, "")
+    .replace(/<iframe[\s\S]*?>[\s\S]*?<\/iframe>/gi, "")
+    .replace(/<object[\s\S]*?>[\s\S]*?<\/object>/gi, "")
+    .replace(/<embed[\s\S]*?>[\s\S]*?<\/embed>/gi, "")
+    .replace(/<link[\s\S]*?>/gi, "")
+    .replace(/\son\w+\s*=\s*(['"]).*?\1/gi, "")
+    .replace(/\son\w+\s*=\s*[^\s>]+/gi, "")
+    .replace(/javascript:/gi, "");
+}
+
+function renderHtmlTemplate(templateHtml: string, cv: CVData) {
+  let html = sanitizeUploadedHtml(templateHtml);
+
+  html = html.replace(
+    /{{#experience}}([\s\S]*?){{\/experience}}/g,
+    (_, block: string) =>
+      cv.experience
+        .map((job) => {
+          let item = block
+            .replace(/{{\s*title\s*}}/g, escapeHtml(job.title))
+            .replace(/{{\s*company\s*}}/g, escapeHtml(job.company))
+            .replace(/{{\s*period\s*}}/g, escapeHtml(job.period));
+
+          item = item.replace(
+            /{{#bullets}}([\s\S]*?){{\/bullets}}/g,
+            (_bulletBlock: string, bulletBlock: string) =>
+              job.bullets
+                .map((bullet) =>
+                  bulletBlock.replace(/{{\s*\.\s*}}/g, escapeHtml(bullet)),
+                )
+                .join(""),
+          );
+
+          return item;
+        })
+        .join(""),
+  );
+
+  html = html.replace(
+    /{{#skills}}([\s\S]*?){{\/skills}}/g,
+    (_, block: string) =>
+      cv.skills
+        .map((skill) => block.replace(/{{\s*\.\s*}}/g, escapeHtml(skill)))
+        .join(""),
+  );
+
+  html = html.replace(
+    /{{#projects}}([\s\S]*?){{\/projects}}/g,
+    (_, block: string) =>
+      cv.projects
+        .map((project) =>
+          block
+            .replace(/{{\s*name\s*}}/g, escapeHtml(project.name))
+            .replace(/{{\s*desc\s*}}/g, escapeHtml(project.desc)),
+        )
+        .join(""),
+  );
+
+  html = html.replace(
+    /{{#certificates}}([\s\S]*?){{\/certificates}}/g,
+    (_, block: string) =>
+      cv.certificates
+        .map((item) => block.replace(/{{\s*\.\s*}}/g, escapeHtml(item)))
+        .join(""),
+  );
+
+  const avatarHtml =
+    '<div style="width:96px;height:96px;border-radius:50%;background:linear-gradient(135deg,#d9e5ff,#f0f4ff);border:1px solid #d9e4f8;"></div>';
+
+  const values: Record<string, string> = {
+    name: escapeHtml(cv.profile.name),
+    role: escapeHtml(cv.profile.role),
+    location: escapeHtml(cv.profile.location),
+    phone: escapeHtml(cv.profile.phone),
+    email: escapeHtml(cv.profile.email),
+    website: escapeHtml(cv.profile.website),
+    avatar: avatarHtml,
+    summary: nl2br(cv.summary),
+    education: nl2br(cv.education),
+  };
+
+  Object.entries(values).forEach(([key, value]) => {
+    html = html.replace(new RegExp(`{{\\s*${key}\\s*}}`, "g"), value);
+  });
+
+  html = html
+    .replace(/{{#[\s\S]*?}}/g, "")
+    .replace(/{{\/[\s\S]*?}}/g, "")
+    .replace(/{{[\s\S]*?}}/g, "");
+
+  if (/<html[\s>]/i.test(html)) return html;
+
+  return `<!doctype html>
+<html lang="vi">
+<head>
+<meta charset="utf-8" />
+<style>
+  @page { size: A4; margin: 0; }
+  body { margin: 0; background: #f1f5f9; }
+</style>
+</head>
+<body>${html}</body>
+</html>`;
+}
+
+
 export default function CVStudioPage() {
   const [activeTab, setActiveTab] = useState<TabKey>("quick");
   const [cv, setCv] = useState<CVData>(initialCv);
   const [template, setTemplate] = useState<TemplateKey>("navy");
   const [quickText, setQuickText] = useState("");
+  const [customTemplateHtml, setCustomTemplateHtml] = useState("");
+  const [customTemplateName, setCustomTemplateName] = useState("Mẫu HTML tải lên");
   const [primaryColor, setPrimaryColor] = useState("#315cff");
   const [fontScale, setFontScale] = useState(1);
   const [spacing, setSpacing] = useState(24);
@@ -507,6 +639,8 @@ export default function CVStudioPage() {
         spacing?: number;
         sectionOrder?: SectionKey[];
         avatarShape?: AvatarShape;
+        customTemplateHtml?: string;
+        customTemplateName?: string;
       };
 
       if (parsed.cv) setCv(parsed.cv);
@@ -516,6 +650,8 @@ export default function CVStudioPage() {
       if (parsed.spacing) setSpacing(parsed.spacing);
       if (parsed.sectionOrder) setSectionOrder(parsed.sectionOrder);
       if (parsed.avatarShape) setAvatarShape(parsed.avatarShape);
+      if (parsed.customTemplateHtml) setCustomTemplateHtml(parsed.customTemplateHtml);
+      if (parsed.customTemplateName) setCustomTemplateName(parsed.customTemplateName);
       setSaveStatus("Đã tải bản nháp");
     } catch {
       setSaveStatus("Không đọc được bản nháp cũ");
@@ -570,6 +706,69 @@ export default function CVStudioPage() {
     setActiveTab("content");
     setSaveStatus("Đã nhận diện nội dung");
   }
+
+
+  async function handleHtmlTemplateUpload(event: ChangeEvent<HTMLInputElement>) {
+    const file = event.target.files?.[0];
+
+    if (!file) return;
+
+    const isHtml =
+      file.name.toLowerCase().endsWith(".html") ||
+      file.name.toLowerCase().endsWith(".htm") ||
+      file.type === "text/html";
+
+    if (!isHtml) {
+      setSaveStatus("Chỉ hỗ trợ file HTML");
+      return;
+    }
+
+    const rawHtml = await file.text();
+    const cleanHtml = sanitizeUploadedHtml(rawHtml);
+
+    if (!cleanHtml.includes("{{name}}") && !cleanHtml.includes("{{experience}}")) {
+      setSaveStatus("Mẫu HTML nên có placeholder như {{name}}, {{experience}}");
+    } else {
+      setSaveStatus("Đã tải mẫu HTML");
+    }
+
+    setCustomTemplateHtml(cleanHtml);
+    setCustomTemplateName(file.name.replace(/\.html?$/i, ""));
+    setTemplate("customHtml");
+    setActiveTab("templates");
+  }
+
+  function clearHtmlTemplate() {
+    setCustomTemplateHtml("");
+    setCustomTemplateName("Mẫu HTML tải lên");
+    if (template === "customHtml") setTemplate("navy");
+    setSaveStatus("Đã xóa mẫu HTML");
+  }
+
+  function printCv() {
+    if (template === "customHtml" && customTemplateHtml) {
+      const popup = window.open("", "_blank");
+
+      if (!popup) {
+        setSaveStatus("Trình duyệt đang chặn cửa sổ in");
+        return;
+      }
+
+      popup.document.open();
+      popup.document.write(renderHtmlTemplate(customTemplateHtml, cv));
+      popup.document.close();
+      popup.focus();
+
+      window.setTimeout(() => {
+        popup.print();
+      }, 300);
+
+      return;
+    }
+
+    window.print();
+  }
+
 
   function updateProfile(key: keyof Profile, value: string) {
     setCv((current) => ({
@@ -824,6 +1023,34 @@ KỸ NĂNG
           <div className={styles.panelTitle}>
             <span>Chọn mẫu CV</span>
             <small>Đổi mẫu nhưng giữ nguyên nội dung đã nhập.</small>
+          </div>
+
+          <div className={styles.uploadTemplateBox}>
+            <div>
+              <strong>Upload mẫu HTML</strong>
+              <p>
+                Hỗ trợ file .html có placeholder như tên, vị trí, kinh nghiệm,
+                kỹ năng. Ví dụ: name, role, experience, skills.
+              </p>
+            </div>
+
+            <label className={styles.uploadButton}>
+              Chọn file HTML
+              <input
+                type="file"
+                accept=".html,.htm,text/html"
+                onChange={handleHtmlTemplateUpload}
+              />
+            </label>
+
+            {customTemplateHtml ? (
+              <div className={styles.uploadedTemplateInfo}>
+                <span>Đang có mẫu: {customTemplateName}</span>
+                <button type="button" onClick={clearHtmlTemplate}>
+                  Xóa mẫu HTML
+                </button>
+              </div>
+            ) : null}
           </div>
 
           <div className={styles.templateList}>
@@ -1164,7 +1391,7 @@ KỸ NĂNG
           <button
             type="button"
             className={styles.primaryButton}
-            onClick={() => window.print()}
+            onClick={printCv}
           >
             Tải PDF
           </button>
@@ -1207,12 +1434,20 @@ KỸ NĂNG
               <button type="button" onClick={saveDraft}>
                 Lưu
               </button>
-              <button type="button" onClick={() => window.print()}>
+              <button type="button" onClick={printCv}>
                 In / PDF
               </button>
             </div>
           </div>
 
+          {template === "customHtml" && customTemplateHtml ? (
+            <iframe
+              className={styles.customTemplateFrame}
+              title="Mẫu CV HTML tải lên"
+              sandbox=""
+              srcDoc={renderHtmlTemplate(customTemplateHtml, cv)}
+            />
+          ) : (
           <article
             className={`${styles.cvPaper} ${templateClass}`}
             style={paperStyle}
@@ -1240,6 +1475,7 @@ KỸ NĂNG
               ))}
             </div>
           </article>
+          )}
         </section>
 
         <aside className={styles.helperPanel}>

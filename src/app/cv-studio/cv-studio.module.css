@@ -2199,3 +2199,97 @@
     -webkit-print-color-adjust: exact;
   }
 }
+
+/* ===== HTML template upload ===== */
+
+.uploadTemplateBox {
+  display: grid;
+  gap: 12px;
+  margin-bottom: 16px;
+  padding: 16px;
+  border: 1px dashed rgba(49, 92, 255, 0.42);
+  border-radius: 18px;
+  background: #f7f9ff;
+}
+
+.uploadTemplateBox strong {
+  display: block;
+  color: #172033;
+  font-size: 15px;
+}
+
+.uploadTemplateBox p {
+  margin: 6px 0 0;
+  color: #66758c;
+  font-size: 13px;
+  line-height: 1.55;
+}
+
+.uploadButton {
+  min-height: 42px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 14px;
+  color: #ffffff;
+  font-size: 13px;
+  font-weight: 900;
+  background: linear-gradient(135deg, #315cff, #8b5cf6);
+  cursor: pointer;
+}
+
+.uploadButton input {
+  display: none;
+}
+
+.uploadedTemplateInfo {
+  display: grid;
+  gap: 8px;
+  padding: 10px;
+  border-radius: 14px;
+  background: #ffffff;
+}
+
+.uploadedTemplateInfo span {
+  color: #263247;
+  font-size: 13px;
+  font-weight: 850;
+}
+
+.uploadedTemplateInfo button {
+  min-height: 34px;
+  border: 0;
+  border-radius: 12px;
+  color: #dc2626;
+  font-size: 13px;
+  font-weight: 900;
+  background: #fff1f2;
+  cursor: pointer;
+}
+
+.customTemplateFrame {
+  width: min(100%, 860px);
+  height: 1120px;
+  display: block;
+  margin: 0 auto;
+  border: 1px solid #e5eaf3;
+  border-radius: 20px;
+  background: #ffffff;
+  box-shadow: 0 30px 80px rgba(29, 39, 68, 0.12);
+}
+
+.customHtmlTemplate {
+  background: #ffffff;
+}
+
+@media print {
+  .customTemplateFrame {
+    width: 210mm !important;
+    min-height: 297mm !important;
+    height: 297mm !important;
+    border: 0 !important;
+    border-radius: 0 !important;
+    box-shadow: none !important;
+  }
+}
+
