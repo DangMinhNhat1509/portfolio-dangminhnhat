@@ -1,26 +1,979 @@
+"use client";
+
 import Link from "next/link";
+import {
+  useEffect,
+  useMemo,
+  useState,
+  type CSSProperties,
+  type ReactNode,
+} from "react";
 import styles from "./cv-studio.module.css";
 
-const sections = [
-  ["Thông tin cá nhân", "Điền họ tên, vị trí, liên hệ"],
-  ["Kinh nghiệm làm việc", "Thêm công việc, số liệu, đóng góp"],
-  ["Học vấn", "Trường học, chuyên ngành, thời gian"],
-  ["Kỹ năng", "IT Support, giảng dạy, công cụ"],
-  ["Dự án", "Portfolio, CV web, Math Word Studio"],
-  ["Chứng chỉ", "Tin học, sư phạm, khóa học"],
-  ["Giải thưởng", "Thành tích nổi bật"],
-];
+type TabKey = "quick" | "content" | "templates" | "design";
+type TemplateKey = "navy" | "yellow" | "minimal";
+type SectionKey =
+  | "summary"
+  | "experience"
+  | "skills"
+  | "education"
+  | "projects"
+  | "certificates";
 
-const templates = ["Navy Pro", "Yellow IT", "Minimal A4"];
+type Profile = {
+  name: string;
+  role: string;
+  location: string;
+  phone: string;
+  email: string;
+  website: string;
+};
 
-const skills = [
-  ["IT Support", "82%"],
-  ["Tin học văn phòng", "88%"],
-  ["Giảng dạy Toán", "86%"],
-  ["React / Web cơ bản", "74%"],
-];
+type Experience = {
+  id: string;
+  title: string;
+  company: string;
+  period: string;
+  bullets: string[];
+};
+
+type Project = {
+  id: string;
+  name: string;
+  desc: string;
+};
+
+type CVData = {
+  profile: Profile;
+  summary: string;
+  experience: Experience[];
+  education: string;
+  skills: string[];
+  projects: Project[];
+  certificates: string[];
+};
+
+const STORAGE_KEY = "cv-studio-v1";
+
+const initialCv: CVData = {
+  profile: {
+    name: "Nguyễn Văn A",
+    role: "IT Support / Giáo viên Tin học",
+    location: "Đồng Nai, Việt Nam",
+    phone: "0123 456 789",
+    email: "email@example.com",
+    website: "portfolio.example.com",
+  },
+  summary:
+    "Ứng viên định hướng IT Support, có nền tảng tin học, khả năng hướng dẫn người dùng và kinh nghiệm giảng dạy trực tuyến.",
+  experience: [
+    {
+      id: "exp-1",
+      title: "Gia sư Toán online",
+      company: "Dạy học cá nhân",
+      period: "2025 - Hiện tại",
+      bullets: [
+        "Dạy Toán lớp 7, 8 và ôn thi chuyển cấp.",
+        "Soạn đề, chữa bài, theo dõi tiến độ học sinh.",
+        "Giao tiếp với phụ huynh sau từng buổi học.",
+      ],
+    },
+    {
+      id: "exp-2",
+      title: "Dự án CV / Web cá nhân",
+      company: "Portfolio cá nhân",
+      period: "2026",
+      bullets: [
+        "Xây dựng trang portfolio và công cụ tạo CV.",
+        "Tối ưu bố cục giao diện, nội dung và trải nghiệm.",
+      ],
+    },
+  ],
+  education:
+    "Nghiệp vụ sư phạm Tin học THCS/THPT\nĐịnh hướng giảng dạy và ứng dụng công nghệ giáo dục.",
+  skills: [
+    "IT Support",
+    "Tin học văn phòng",
+    "Giảng dạy Toán",
+    "React / Web cơ bản",
+  ],
+  projects: [
+    {
+      id: "project-1",
+      name: "Math Word Studio",
+      desc: "Công cụ hỗ trợ soạn nội dung Toán học, công thức, hình học và tài liệu học tập.",
+    },
+  ],
+  certificates: ["Chứng chỉ / khóa học liên quan đến Tin học và giảng dạy"],
+};
+
+const templateMeta: Record<
+  TemplateKey,
+  { name: string; desc: string; note: string }
+> = {
+  navy: {
+    name: "Navy Pro",
+    desc: "Chuyên nghiệp, hợp IT Support",
+    note: "Có sidebar xanh đậm, nhìn chắc chắn.",
+  },
+  yellow: {
+    name: "Yellow IT",
+    desc: "Nổi bật, cá tính, dễ gây chú ý",
+    note: "Hợp CV ứng tuyển kỹ thuật, hỗ trợ IT.",
+  },
+  minimal: {
+    name: "Minimal A4",
+    desc: "Gọn, dễ đọc, ít màu",
+    note: "Hợp gửi nhiều công ty, dễ in trắng đen.",
+  },
+};
+
+const sectionLabels: Record<SectionKey, string> = {
+  summary: "Giới thiệu",
+  experience: "Kinh nghiệm",
+  skills: "Kỹ năng",
+  education: "Học vấn",
+  projects: "Dự án",
+  certificates: "Chứng chỉ",
+};
+
+function makeId(prefix: string) {
+  return `${prefix}-${Date.now()}-${Math.random().toString(16).slice(2)}`;
+}
+
+function cleanLines(text: string) {
+  return text
+    .split(/\r?\n/)
+    .map((line) => line.trim())
+    .filter(Boolean);
+}
+
+function normalizeText(text: string) {
+  return text
+    .toLowerCase()
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "");
+}
+
+function detectSection(line: string): SectionKey | null {
+  const text = normalizeText(line).replace(/[:：]/g, "");
+
+  if (/(gioi thieu|muc tieu|tom tat|summary)/.test(text)) return "summary";
+  if (/(kinh nghiem|experience|viec lam|cong viec)/.test(text))
+    return "experience";
+  if (/(ky nang|skill)/.test(text)) return "skills";
+  if (/(hoc van|education|bang cap)/.test(text)) return "education";
+  if (/(du an|project)/.test(text)) return "projects";
+  if (/(chung chi|certificate|giai thuong)/.test(text))
+    return "certificates";
+
+  return null;
+}
+
+function readValue(line: string, labels: string[]) {
+  const normalized = normalizeText(line);
+  const matched = labels.find((label) => normalized.startsWith(label));
+
+  if (!matched) return "";
+
+  const index = line.indexOf(":");
+  if (index >= 0) return line.slice(index + 1).trim();
+
+  return line.replace(new RegExp(matched, "i"), "").trim();
+}
+
+function parseBullets(text: string) {
+  return cleanLines(text).map((line) => line.replace(/^[-•*]\s*/, "").trim());
+}
+
+function parseExperience(lines: string[]): Experience[] {
+  const jobs: Experience[] = [];
+  let current: Experience | null = null;
+
+  lines.forEach((rawLine) => {
+    const isBullet = /^[-•*]\s+/.test(rawLine);
+    const line = rawLine.replace(/^[-•*]\s*/, "").trim();
+
+    if (!line) return;
+
+    if (isBullet) {
+      if (!current) {
+        current = {
+          id: makeId("exp"),
+          title: "Kinh nghiệm",
+          company: "",
+          period: "",
+          bullets: [],
+        };
+        jobs.push(current);
+      }
+
+      current.bullets.push(line);
+      return;
+    }
+
+    const looksLikePeriod = /\b(20\d{2}|19\d{2}|nay|hiện tại|present)\b/i.test(
+      line,
+    );
+
+    if (looksLikePeriod && current && !current.period) {
+      current.period = line;
+      return;
+    }
+
+    current = {
+      id: makeId("exp"),
+      title: line,
+      company: "",
+      period: "",
+      bullets: [],
+    };
+    jobs.push(current);
+  });
+
+  return jobs.length ? jobs : initialCv.experience;
+}
+
+function parseProjects(lines: string[]): Project[] {
+  if (!lines.length) return initialCv.projects;
+
+  const projects: Project[] = [];
+  let current: Project | null = null;
+
+  lines.forEach((rawLine) => {
+    const isBullet = /^[-•*]\s+/.test(rawLine);
+    const line = rawLine.replace(/^[-•*]\s*/, "").trim();
+
+    if (!line) return;
+
+    if (!current || !isBullet) {
+      current = {
+        id: makeId("project"),
+        name: line,
+        desc: "",
+      };
+      projects.push(current);
+      return;
+    }
+
+    current.desc = current.desc ? `${current.desc} ${line}` : line;
+  });
+
+  return projects;
+}
+
+function parseQuickText(text: string, currentCv: CVData): CVData {
+  const lines = cleanLines(text);
+  const buckets: Partial<Record<SectionKey, string[]>> = {};
+  let activeSection: SectionKey | null = null;
+  const profile: Partial<Profile> = {};
+
+  lines.forEach((line, index) => {
+    const section = detectSection(line);
+
+    if (section) {
+      activeSection = section;
+      if (!buckets[section]) buckets[section] = [];
+      return;
+    }
+
+    const name = readValue(line, ["ho ten", "ten", "name"]);
+    const role = readValue(line, ["vi tri", "chuc danh", "role"]);
+    const phone = readValue(line, ["dien thoai", "sdt", "phone"]);
+    const email = readValue(line, ["email", "mail"]);
+    const location = readValue(line, ["dia chi", "location", "noi o"]);
+    const website = readValue(line, ["website", "portfolio", "linkedin"]);
+
+    if (name) profile.name = name;
+    if (role) profile.role = role;
+    if (phone) profile.phone = phone;
+    if (email) profile.email = email;
+    if (location) profile.location = location;
+    if (website) profile.website = website;
+
+    if (!activeSection && index === 0 && !name && line.length < 60) {
+      profile.name = line;
+      return;
+    }
+
+    if (activeSection) {
+      buckets[activeSection] = [...(buckets[activeSection] || []), line];
+    }
+  });
+
+  return {
+    ...currentCv,
+    profile: {
+      ...currentCv.profile,
+      ...profile,
+    },
+    summary: buckets.summary?.length
+      ? buckets.summary.join(" ")
+      : currentCv.summary,
+    experience: buckets.experience?.length
+      ? parseExperience(buckets.experience)
+      : currentCv.experience,
+    education: buckets.education?.length
+      ? buckets.education.join("\n")
+      : currentCv.education,
+    skills: buckets.skills?.length
+      ? parseBullets(buckets.skills.join("\n"))
+      : currentCv.skills,
+    projects: buckets.projects?.length
+      ? parseProjects(buckets.projects)
+      : currentCv.projects,
+    certificates: buckets.certificates?.length
+      ? parseBullets(buckets.certificates.join("\n"))
+      : currentCv.certificates,
+  };
+}
 
 export default function CVStudioPage() {
+  const [activeTab, setActiveTab] = useState<TabKey>("quick");
+  const [cv, setCv] = useState<CVData>(initialCv);
+  const [template, setTemplate] = useState<TemplateKey>("navy");
+  const [quickText, setQuickText] = useState("");
+  const [primaryColor, setPrimaryColor] = useState("#315cff");
+  const [fontScale, setFontScale] = useState(1);
+  const [spacing, setSpacing] = useState(24);
+  const [sectionOrder, setSectionOrder] = useState<SectionKey[]>([
+    "summary",
+    "experience",
+    "skills",
+    "education",
+    "projects",
+    "certificates",
+  ]);
+  const [dragging, setDragging] = useState<SectionKey | null>(null);
+  const [saveStatus, setSaveStatus] = useState("Chưa lưu");
+
+  useEffect(() => {
+    const saved = localStorage.getItem(STORAGE_KEY);
+
+    if (!saved) return;
+
+    try {
+      const parsed = JSON.parse(saved) as {
+        cv?: CVData;
+        template?: TemplateKey;
+        primaryColor?: string;
+        fontScale?: number;
+        spacing?: number;
+        sectionOrder?: SectionKey[];
+      };
+
+      if (parsed.cv) setCv(parsed.cv);
+      if (parsed.template) setTemplate(parsed.template);
+      if (parsed.primaryColor) setPrimaryColor(parsed.primaryColor);
+      if (parsed.fontScale) setFontScale(parsed.fontScale);
+      if (parsed.spacing) setSpacing(parsed.spacing);
+      if (parsed.sectionOrder) setSectionOrder(parsed.sectionOrder);
+      setSaveStatus("Đã tải bản nháp");
+    } catch {
+      setSaveStatus("Không đọc được bản nháp cũ");
+    }
+  }, []);
+
+  const templateClass = {
+    navy: styles.navyTemplate,
+    yellow: styles.yellowTemplate,
+    minimal: styles.minimalTemplate,
+  }[template];
+
+  const paperStyle = {
+    "--cv-accent": primaryColor,
+    "--cv-font-scale": fontScale,
+    "--cv-section-gap": `${spacing}px`,
+  } as CSSProperties;
+
+  const completionScore = useMemo(() => {
+    let score = 0;
+    if (cv.profile.name) score += 15;
+    if (cv.profile.role) score += 10;
+    if (cv.summary) score += 15;
+    if (cv.experience.length) score += 20;
+    if (cv.skills.length) score += 15;
+    if (cv.education) score += 10;
+    if (cv.projects.length) score += 10;
+    if (cv.certificates.length) score += 5;
+    return score;
+  }, [cv]);
+
+  function saveDraft() {
+    localStorage.setItem(
+      STORAGE_KEY,
+      JSON.stringify({
+        cv,
+        template,
+        primaryColor,
+        fontScale,
+        spacing,
+        sectionOrder,
+      }),
+    );
+    setSaveStatus("Đã lưu nháp");
+  }
+
+  function applyQuickText() {
+    if (!quickText.trim()) {
+      setSaveStatus("Bạn chưa dán nội dung");
+      return;
+    }
+
+    setCv((current) => parseQuickText(quickText, current));
+    setActiveTab("content");
+    setSaveStatus("Đã nhận diện nội dung");
+  }
+
+  function updateProfile(key: keyof Profile, value: string) {
+    setCv((current) => ({
+      ...current,
+      profile: {
+        ...current.profile,
+        [key]: value,
+      },
+    }));
+    setSaveStatus("Có thay đổi chưa lưu");
+  }
+
+  function updateExperience(
+    id: string,
+    key: keyof Omit<Experience, "id">,
+    value: string | string[],
+  ) {
+    setCv((current) => ({
+      ...current,
+      experience: current.experience.map((item) =>
+        item.id === id ? { ...item, [key]: value } : item,
+      ),
+    }));
+    setSaveStatus("Có thay đổi chưa lưu");
+  }
+
+  function addExperience() {
+    setCv((current) => ({
+      ...current,
+      experience: [
+        ...current.experience,
+        {
+          id: makeId("exp"),
+          title: "Vị trí mới",
+          company: "Tên đơn vị",
+          period: "Thời gian",
+          bullets: ["Mô tả đóng góp chính."],
+        },
+      ],
+    }));
+  }
+
+  function removeExperience(id: string) {
+    setCv((current) => ({
+      ...current,
+      experience: current.experience.filter((item) => item.id !== id),
+    }));
+  }
+
+  function addProject() {
+    setCv((current) => ({
+      ...current,
+      projects: [
+        ...current.projects,
+        {
+          id: makeId("project"),
+          name: "Dự án mới",
+          desc: "Mô tả ngắn về dự án.",
+        },
+      ],
+    }));
+  }
+
+  function updateProject(id: string, key: keyof Omit<Project, "id">, value: string) {
+    setCv((current) => ({
+      ...current,
+      projects: current.projects.map((project) =>
+        project.id === id ? { ...project, [key]: value } : project,
+      ),
+    }));
+    setSaveStatus("Có thay đổi chưa lưu");
+  }
+
+  function removeProject(id: string) {
+    setCv((current) => ({
+      ...current,
+      projects: current.projects.filter((project) => project.id !== id),
+    }));
+  }
+
+  function moveSection(from: SectionKey, to: SectionKey) {
+    setSectionOrder((current) => {
+      const next = [...current];
+      const fromIndex = next.indexOf(from);
+      const toIndex = next.indexOf(to);
+
+      if (fromIndex < 0 || toIndex < 0) return current;
+
+      next.splice(fromIndex, 1);
+      next.splice(toIndex, 0, from);
+      return next;
+    });
+    setSaveStatus("Có thay đổi chưa lưu");
+  }
+
+  function shiftSection(section: SectionKey, direction: "up" | "down") {
+    setSectionOrder((current) => {
+      const index = current.indexOf(section);
+      const targetIndex = direction === "up" ? index - 1 : index + 1;
+
+      if (targetIndex < 0 || targetIndex >= current.length) return current;
+
+      const next = [...current];
+      [next[index], next[targetIndex]] = [next[targetIndex], next[index]];
+      return next;
+    });
+  }
+
+  function renderCvSection(section: SectionKey): ReactNode {
+    if (section === "summary") {
+      return (
+        <section>
+          <h2>Giới thiệu</h2>
+          <p>{cv.summary}</p>
+        </section>
+      );
+    }
+
+    if (section === "experience") {
+      return (
+        <section>
+          <h2>Kinh nghiệm làm việc</h2>
+          {cv.experience.map((job) => (
+            <div className={styles.cvJob} key={job.id}>
+              <h3>{job.title}</h3>
+              <span>
+                {job.company}
+                {job.company && job.period ? " · " : ""}
+                {job.period}
+              </span>
+              <ul>
+                {job.bullets.map((bullet) => (
+                  <li key={bullet}>{bullet}</li>
+                ))}
+              </ul>
+            </div>
+          ))}
+        </section>
+      );
+    }
+
+    if (section === "skills") {
+      return (
+        <section>
+          <h2>Kỹ năng</h2>
+          <div className={styles.skillTags}>
+            {cv.skills.map((skill) => (
+              <span key={skill}>{skill}</span>
+            ))}
+          </div>
+        </section>
+      );
+    }
+
+    if (section === "education") {
+      return (
+        <section>
+          <h2>Học vấn</h2>
+          {cv.education.split("\n").map((line) => (
+            <p key={line}>{line}</p>
+          ))}
+        </section>
+      );
+    }
+
+    if (section === "projects") {
+      return (
+        <section>
+          <h2>Dự án nổi bật</h2>
+          {cv.projects.map((project) => (
+            <div className={styles.cvJob} key={project.id}>
+              <h3>{project.name}</h3>
+              <p>{project.desc}</p>
+            </div>
+          ))}
+        </section>
+      );
+    }
+
+    return (
+      <section>
+        <h2>Chứng chỉ</h2>
+        <ul>
+          {cv.certificates.map((item) => (
+            <li key={item}>{item}</li>
+          ))}
+        </ul>
+      </section>
+    );
+  }
+
+  function renderTabContent() {
+    if (activeTab === "quick") {
+      return (
+        <div className={styles.tabContent}>
+          <div className={styles.panelTitle}>
+            <span>Nhập nhanh từ Word / văn bản</span>
+            <small>Dán nội dung CV, app sẽ tự chia về đúng mục.</small>
+          </div>
+
+          <textarea
+            className={styles.quickTextarea}
+            value={quickText}
+            onChange={(event) => setQuickText(event.target.value)}
+            placeholder={`Ví dụ:
+
+HỌ TÊN: Nguyễn Văn A
+VỊ TRÍ: IT Support
+
+GIỚI THIỆU
+Tôi có nền tảng tin học và kinh nghiệm hỗ trợ người dùng.
+
+KINH NGHIỆM
+Gia sư Toán online
+2025 - Hiện tại
+- Dạy Toán lớp 7, 8
+- Soạn đề, chữa bài
+
+KỸ NĂNG
+- IT Support
+- Tin học văn phòng
+- Giảng dạy`}
+          />
+
+          <div className={styles.rowActions}>
+            <button type="button" className={styles.primaryButton} onClick={applyQuickText}>
+              Tự nhận diện nội dung
+            </button>
+            <button
+              type="button"
+              className={styles.ghostButton}
+              onClick={() => setQuickText("")}
+            >
+              Xóa ô nhập
+            </button>
+          </div>
+
+          <div className={styles.hintBox}>
+            <strong>Cách dùng nhanh:</strong>
+            <p>
+              Copy nội dung từ Word rồi dán vào đây. Các tiêu đề như Kinh nghiệm,
+              Học vấn, Kỹ năng, Dự án sẽ được tự nhận diện.
+            </p>
+          </div>
+        </div>
+      );
+    }
+
+    if (activeTab === "templates") {
+      return (
+        <div className={styles.tabContent}>
+          <div className={styles.panelTitle}>
+            <span>Chọn mẫu CV</span>
+            <small>Đổi mẫu nhưng giữ nguyên nội dung đã nhập.</small>
+          </div>
+
+          <div className={styles.templateList}>
+            {(Object.keys(templateMeta) as TemplateKey[]).map((key) => (
+              <button
+                type="button"
+                className={`${styles.templateCard} ${
+                  template === key ? styles.templateActive : ""
+                }`}
+                key={key}
+                onClick={() => setTemplate(key)}
+              >
+                <b>{templateMeta[key].name}</b>
+                <span>{templateMeta[key].desc}</span>
+                <small>{templateMeta[key].note}</small>
+              </button>
+            ))}
+          </div>
+        </div>
+      );
+    }
+
+    if (activeTab === "design") {
+      return (
+        <div className={styles.tabContent}>
+          <div className={styles.panelTitle}>
+            <span>Thiết kế & thứ tự mục</span>
+            <small>Kéo thả để đổi thứ tự hiển thị trong CV.</small>
+          </div>
+
+          <label className={styles.field}>
+            <span>Màu chủ đạo</span>
+            <div className={styles.colorPicker}>
+              {["#315cff", "#111827", "#f5b82e", "#0f766e", "#dc2626"].map(
+                (color) => (
+                  <button
+                    type="button"
+                    key={color}
+                    style={{ background: color }}
+                    className={primaryColor === color ? styles.colorActive : ""}
+                    onClick={() => setPrimaryColor(color)}
+                    aria-label={`Chọn màu ${color}`}
+                  />
+                ),
+              )}
+            </div>
+          </label>
+
+          <label className={styles.field}>
+            <span>Cỡ chữ</span>
+            <input
+              type="range"
+              min="0.9"
+              max="1.12"
+              step="0.01"
+              value={fontScale}
+              onChange={(event) => setFontScale(Number(event.target.value))}
+            />
+          </label>
+
+          <label className={styles.field}>
+            <span>Khoảng cách giữa mục</span>
+            <input
+              type="range"
+              min="14"
+              max="36"
+              step="1"
+              value={spacing}
+              onChange={(event) => setSpacing(Number(event.target.value))}
+            />
+          </label>
+
+          <div className={styles.orderList}>
+            {sectionOrder.map((section) => (
+              <div
+                className={styles.orderItem}
+                draggable
+                key={section}
+                onDragStart={() => setDragging(section)}
+                onDragOver={(event) => event.preventDefault()}
+                onDrop={() => {
+                  if (dragging) moveSection(dragging, section);
+                  setDragging(null);
+                }}
+              >
+                <span>☰</span>
+                <b>{sectionLabels[section]}</b>
+                <div>
+                  <button type="button" onClick={() => shiftSection(section, "up")}>
+                    ↑
+                  </button>
+                  <button type="button" onClick={() => shiftSection(section, "down")}>
+                    ↓
+                  </button>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      );
+    }
+
+    return (
+      <div className={styles.tabContent}>
+        <div className={styles.panelTitle}>
+          <span>Chỉnh nội dung</span>
+          <small>Sửa trực tiếp từng mục, preview sẽ đổi ngay.</small>
+        </div>
+
+        <div className={styles.formGrid}>
+          <label className={styles.field}>
+            <span>Họ tên</span>
+            <input
+              value={cv.profile.name}
+              onChange={(event) => updateProfile("name", event.target.value)}
+            />
+          </label>
+
+          <label className={styles.field}>
+            <span>Vị trí ứng tuyển</span>
+            <input
+              value={cv.profile.role}
+              onChange={(event) => updateProfile("role", event.target.value)}
+            />
+          </label>
+
+          <label className={styles.field}>
+            <span>Địa chỉ</span>
+            <input
+              value={cv.profile.location}
+              onChange={(event) => updateProfile("location", event.target.value)}
+            />
+          </label>
+
+          <label className={styles.field}>
+            <span>Số điện thoại</span>
+            <input
+              value={cv.profile.phone}
+              onChange={(event) => updateProfile("phone", event.target.value)}
+            />
+          </label>
+
+          <label className={styles.field}>
+            <span>Email</span>
+            <input
+              value={cv.profile.email}
+              onChange={(event) => updateProfile("email", event.target.value)}
+            />
+          </label>
+
+          <label className={styles.field}>
+            <span>Website / LinkedIn</span>
+            <input
+              value={cv.profile.website}
+              onChange={(event) => updateProfile("website", event.target.value)}
+            />
+          </label>
+        </div>
+
+        <label className={styles.field}>
+          <span>Giới thiệu</span>
+          <textarea
+            value={cv.summary}
+            onChange={(event) =>
+              setCv((current) => ({ ...current, summary: event.target.value }))
+            }
+          />
+        </label>
+
+        <div className={styles.editGroup}>
+          <div className={styles.groupHeader}>
+            <strong>Kinh nghiệm</strong>
+            <button type="button" onClick={addExperience}>
+              + Thêm
+            </button>
+          </div>
+
+          {cv.experience.map((job) => (
+            <div className={styles.editCard} key={job.id}>
+              <input
+                value={job.title}
+                onChange={(event) =>
+                  updateExperience(job.id, "title", event.target.value)
+                }
+                placeholder="Tên vị trí"
+              />
+              <input
+                value={job.company}
+                onChange={(event) =>
+                  updateExperience(job.id, "company", event.target.value)
+                }
+                placeholder="Công ty / đơn vị"
+              />
+              <input
+                value={job.period}
+                onChange={(event) =>
+                  updateExperience(job.id, "period", event.target.value)
+                }
+                placeholder="Thời gian"
+              />
+              <textarea
+                value={job.bullets.join("\n")}
+                onChange={(event) =>
+                  updateExperience(
+                    job.id,
+                    "bullets",
+                    parseBullets(event.target.value),
+                  )
+                }
+                placeholder="Mỗi dòng là một gạch đầu dòng"
+              />
+              <button
+                type="button"
+                className={styles.dangerButton}
+                onClick={() => removeExperience(job.id)}
+              >
+                Xóa kinh nghiệm này
+              </button>
+            </div>
+          ))}
+        </div>
+
+        <label className={styles.field}>
+          <span>Kỹ năng, mỗi dòng một kỹ năng</span>
+          <textarea
+            value={cv.skills.join("\n")}
+            onChange={(event) =>
+              setCv((current) => ({
+                ...current,
+                skills: parseBullets(event.target.value),
+              }))
+            }
+          />
+        </label>
+
+        <label className={styles.field}>
+          <span>Học vấn</span>
+          <textarea
+            value={cv.education}
+            onChange={(event) =>
+              setCv((current) => ({ ...current, education: event.target.value }))
+            }
+          />
+        </label>
+
+        <div className={styles.editGroup}>
+          <div className={styles.groupHeader}>
+            <strong>Dự án</strong>
+            <button type="button" onClick={addProject}>
+              + Thêm
+            </button>
+          </div>
+
+          {cv.projects.map((project) => (
+            <div className={styles.editCard} key={project.id}>
+              <input
+                value={project.name}
+                onChange={(event) =>
+                  updateProject(project.id, "name", event.target.value)
+                }
+                placeholder="Tên dự án"
+              />
+              <textarea
+                value={project.desc}
+                onChange={(event) =>
+                  updateProject(project.id, "desc", event.target.value)
+                }
+                placeholder="Mô tả dự án"
+              />
+              <button
+                type="button"
+                className={styles.dangerButton}
+                onClick={() => removeProject(project.id)}
+              >
+                Xóa dự án này
+              </button>
+            </div>
+          ))}
+        </div>
+
+        <label className={styles.field}>
+          <span>Chứng chỉ, mỗi dòng một mục</span>
+          <textarea
+            value={cv.certificates.join("\n")}
+            onChange={(event) =>
+              setCv((current) => ({
+                ...current,
+                certificates: parseBullets(event.target.value),
+              }))
+            }
+          />
+        </label>
+      </div>
+    );
+  }
+
   return (
     <main className={styles.page}>
       <header className={styles.topbar}>
@@ -31,175 +984,124 @@ export default function CVStudioPage() {
 
         <nav className={styles.nav}>
           <Link href="/">Trang chủ</Link>
-          <a href="#templates">Mẫu CV</a>
+          <Link href="/cv">Giới thiệu CV</Link>
           <a href="#editor">Chỉnh sửa</a>
           <a href="#preview">Xem trước</a>
         </nav>
 
         <div className={styles.actions}>
-          <button type="button" className={styles.ghostButton}>
+          <span>{saveStatus}</span>
+          <button type="button" className={styles.ghostButton} onClick={saveDraft}>
             Lưu nháp
           </button>
-          <button type="button" className={styles.primaryButton}>
+          <button
+            type="button"
+            className={styles.primaryButton}
+            onClick={() => window.print()}
+          >
             Tải PDF
           </button>
         </div>
       </header>
 
       <section className={styles.workspace}>
-        <aside className={styles.sidebar} id="editor">
+        <aside className={styles.editorPanel} id="editor">
           <div className={styles.tabs}>
-            <button type="button" className={styles.activeTab}>
-              Nội dung
-            </button>
-            <button type="button">Mẫu CV</button>
-            <button type="button">Thiết kế</button>
-          </div>
-
-          <div className={styles.panelTitle}>
-            <span>Trình chỉnh sửa</span>
-            <small>Chọn mục cần hoàn thiện</small>
-          </div>
-
-          <div className={styles.sectionList}>
-            {sections.map(([title, desc]) => (
-              <button type="button" className={styles.sectionItem} key={title}>
-                <span className={styles.sectionIcon}>□</span>
-                <span>
-                  <strong>{title}</strong>
-                  <small>{desc}</small>
-                </span>
-                <b>›</b>
+            {[
+              ["quick", "Nhập nhanh"],
+              ["content", "Nội dung"],
+              ["templates", "Mẫu CV"],
+              ["design", "Thiết kế"],
+            ].map(([key, label]) => (
+              <button
+                type="button"
+                className={activeTab === key ? styles.activeTab : ""}
+                key={key}
+                onClick={() => setActiveTab(key as TabKey)}
+              >
+                {label}
               </button>
             ))}
           </div>
 
-          <button type="button" className={styles.addButton}>
-            + Thêm mục khác
-          </button>
+          {renderTabContent()}
         </aside>
 
         <section className={styles.previewArea} id="preview">
           <div className={styles.previewHeader}>
             <div>
               <span>Xem trước CV</span>
-              <small>Bố cục A4 sạch, dễ đọc</small>
+              <small>
+                Mẫu: {templateMeta[template].name} · Hoàn thiện {completionScore}%
+              </small>
             </div>
+
             <div>
-              <button type="button">Xem trước</button>
-              <button type="button">Xuất PDF</button>
+              <button type="button" onClick={saveDraft}>
+                Lưu
+              </button>
+              <button type="button" onClick={() => window.print()}>
+                In / PDF
+              </button>
             </div>
           </div>
 
-          <article className={styles.cvPaper}>
-            <div className={styles.cvHero}>
+          <article
+            className={`${styles.cvPaper} ${templateClass}`}
+            style={paperStyle}
+          >
+            <div className={styles.cvHeader}>
               <div className={styles.avatar} />
               <div>
-                <h1>Nguyễn Văn A</h1>
-                <p>IT Support / Giáo viên Tin học</p>
+                <h1>{cv.profile.name}</h1>
+                <p>{cv.profile.role}</p>
                 <ul>
-                  <li>Đồng Nai, Việt Nam</li>
-                  <li>0123 456 789</li>
-                  <li>email@example.com</li>
+                  {[cv.profile.location, cv.profile.phone, cv.profile.email, cv.profile.website]
+                    .filter(Boolean)
+                    .map((item) => (
+                      <li key={item}>{item}</li>
+                    ))}
                 </ul>
               </div>
             </div>
 
             <div className={styles.cvBody}>
-              <div className={styles.cvLeft}>
-                <section>
-                  <h2>Giới thiệu</h2>
-                  <p>
-                    Ứng viên định hướng IT Support, có nền tảng tin học, khả
-                    năng hướng dẫn người dùng và kinh nghiệm giảng dạy trực
-                    tuyến.
-                  </p>
-                </section>
-
-                <section>
-                  <h2>Kỹ năng</h2>
-                  {skills.map(([name, value]) => (
-                    <div className={styles.skill} key={name}>
-                      <div>
-                        <span>{name}</span>
-                        <small>{value}</small>
-                      </div>
-                      <i>
-                        <b style={{ width: value }} />
-                      </i>
-                    </div>
-                  ))}
-                </section>
-
-                <section>
-                  <h2>Học vấn</h2>
-                  <p>
-                    Nghiệp vụ sư phạm Tin học THCS/THPT
-                    <br />
-                    Định hướng giảng dạy và ứng dụng công nghệ giáo dục.
-                  </p>
-                </section>
-              </div>
-
-              <div className={styles.cvRight}>
-                <section>
-                  <h2>Kinh nghiệm làm việc</h2>
-                  <div className={styles.job}>
-                    <h3>Gia sư Toán online</h3>
-                    <span>2025 - Hiện tại</span>
-                    <ul>
-                      <li>Dạy Toán lớp 7, 8 và ôn thi chuyển cấp.</li>
-                      <li>Soạn đề, chữa bài, theo dõi tiến độ học sinh.</li>
-                      <li>Giao tiếp với phụ huynh sau từng buổi học.</li>
-                    </ul>
-                  </div>
-
-                  <div className={styles.job}>
-                    <h3>Dự án CV / Web cá nhân</h3>
-                    <span>2026</span>
-                    <ul>
-                      <li>Xây dựng trang portfolio và công cụ tạo CV.</li>
-                      <li>Tối ưu bố cục giao diện, nội dung và trải nghiệm.</li>
-                    </ul>
-                  </div>
-                </section>
-
-                <section>
-                  <h2>Dự án nổi bật</h2>
-                  <p>
-                    Math Word Studio: công cụ hỗ trợ soạn nội dung Toán học,
-                    công thức, hình học và tài liệu học tập.
-                  </p>
-                </section>
-              </div>
+              {sectionOrder.map((section) => (
+                <div className={styles.cvSection} key={section}>
+                  {renderCvSection(section)}
+                </div>
+              ))}
             </div>
           </article>
         </section>
 
-        <aside className={styles.templatePanel} id="templates">
+        <aside className={styles.helperPanel}>
           <div className={styles.panelTitle}>
-            <span>Mẫu CV</span>
-            <small>Chọn phong cách phù hợp</small>
+            <span>Luồng dùng nhanh</span>
+            <small>Làm CV theo 4 bước</small>
           </div>
 
-          {templates.map((name, index) => (
-            <button
-              type="button"
-              className={`${styles.templateCard} ${index === 0 ? styles.selectedTemplate : ""}`}
-              key={name}
-            >
-              <span>{name}</span>
-              <small>{index === 0 ? "Đang chọn" : "Có thể dùng"}</small>
-            </button>
-          ))}
+          <ol className={styles.steps}>
+            <li>Dán nội dung từ Word vào tab Nhập nhanh.</li>
+            <li>Bấm Tự nhận diện nội dung.</li>
+            <li>Sửa lại từng mục ở tab Nội dung.</li>
+            <li>Chọn mẫu, chỉnh màu rồi lưu hoặc xuất PDF.</li>
+          </ol>
 
-          <div className={styles.designBox}>
-            <span>Màu chủ đạo</span>
-            <div className={styles.colorDots}>
-              <i />
-              <i />
-              <i />
-            </div>
+          <div className={styles.scoreCard}>
+            <span>Mức hoàn thiện</span>
+            <strong>{completionScore}%</strong>
+            <i>
+              <b style={{ width: `${completionScore}%` }} />
+            </i>
+          </div>
+
+          <div className={styles.hintBox}>
+            <strong>Gợi ý:</strong>
+            <p>
+              Bản này ưu tiên nhập nhanh và chỉnh dễ. Upload file Word thật sẽ
+              làm sau khi phần parser ổn định.
+            </p>
           </div>
         </aside>
       </section>
