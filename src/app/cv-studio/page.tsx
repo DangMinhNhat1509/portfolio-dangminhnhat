@@ -11,7 +11,29 @@ import {
 import styles from "./cv-studio.module.css";
 
 type TabKey = "quick" | "content" | "templates" | "design";
-type TemplateKey = "navy" | "yellow" | "minimal";
+type TemplateKey =
+  | "navy"
+  | "yellow"
+  | "minimal"
+  | "classic"
+  | "modernBlue"
+  | "teacher"
+  | "techGrid"
+  | "executive"
+  | "creativePurple"
+  | "emerald"
+  | "orange"
+  | "slate"
+  | "monochrome"
+  | "compact"
+  | "rose"
+  | "cyan"
+  | "brown"
+  | "blackGold"
+  | "lavender"
+  | "atsSimple";
+
+type AvatarShape = "circle" | "rounded" | "square" | "portrait";
 type SectionKey =
   | "summary"
   | "experience"
@@ -113,19 +135,142 @@ const templateMeta: Record<
 > = {
   navy: {
     name: "Navy Pro",
-    desc: "Chuyên nghiệp, hợp IT Support",
-    note: "Có sidebar xanh đậm, nhìn chắc chắn.",
+    desc: "Sidebar xanh đậm, chuyên nghiệp",
+    note: "Hợp IT Support, văn phòng, kỹ thuật.",
   },
   yellow: {
     name: "Yellow IT",
-    desc: "Nổi bật, cá tính, dễ gây chú ý",
-    note: "Hợp CV ứng tuyển kỹ thuật, hỗ trợ IT.",
+    desc: "Đen vàng nổi bật",
+    note: "Hợp CV kỹ thuật, support, fresher IT.",
   },
   minimal: {
     name: "Minimal A4",
-    desc: "Gọn, dễ đọc, ít màu",
-    note: "Hợp gửi nhiều công ty, dễ in trắng đen.",
+    desc: "Tối giản, dễ in",
+    note: "Hợp gửi nhiều công ty, dễ đọc, ít rủi ro.",
   },
+  classic: {
+    name: "Classic Serif",
+    desc: "Truyền thống, nghiêm túc",
+    note: "Hợp giáo dục, hành chính, ứng tuyển phổ thông.",
+  },
+  modernBlue: {
+    name: "Modern Blue",
+    desc: "Hiện đại, sạch, màu xanh",
+    note: "Hợp văn phòng, IT, vận hành.",
+  },
+  teacher: {
+    name: "Teacher Soft",
+    desc: "Nhẹ nhàng cho giáo viên/gia sư",
+    note: "Hợp hồ sơ giáo dục, trợ giảng, trung tâm.",
+  },
+  techGrid: {
+    name: "Tech Grid",
+    desc: "Cảm giác công nghệ",
+    note: "Hợp portfolio, web, IT support.",
+  },
+  executive: {
+    name: "Executive",
+    desc: "Cứng cáp, cao cấp",
+    note: "Hợp CV chuyên nghiệp, kinh nghiệm rõ.",
+  },
+  creativePurple: {
+    name: "Creative Purple",
+    desc: "Sáng tạo nhưng vẫn gọn",
+    note: "Hợp content, thiết kế nhẹ, marketing.",
+  },
+  emerald: {
+    name: "Emerald Clean",
+    desc: "Xanh ngọc sạch sẽ",
+    note: "Hợp giáo dục, vận hành, dịch vụ.",
+  },
+  orange: {
+    name: "Orange Startup",
+    desc: "Năng động, trẻ",
+    note: "Hợp startup, fresher, thực tập.",
+  },
+  slate: {
+    name: "Slate Sidebar",
+    desc: "Sidebar xám than",
+    note: "Hợp CV có nhiều kỹ năng và dự án.",
+  },
+  monochrome: {
+    name: "Monochrome ATS",
+    desc: "Đen trắng dễ qua ATS",
+    note: "Hợp nộp online, in trắng đen.",
+  },
+  compact: {
+    name: "Compact Pro",
+    desc: "Gọn nhiều nội dung",
+    note: "Hợp CV có nhiều kinh nghiệm, muốn tiết kiệm trang.",
+  },
+  rose: {
+    name: "Rose Elegant",
+    desc: "Thanh lịch, mềm hơn",
+    note: "Hợp hành chính, giáo dục, dịch vụ.",
+  },
+  cyan: {
+    name: "Cyan Data",
+    desc: "Sáng, rõ, kiểu data/IT",
+    note: "Hợp kỹ thuật, phân tích, tin học.",
+  },
+  brown: {
+    name: "Brown Classic",
+    desc: "Ấm, cổ điển",
+    note: "Hợp giáo viên, gia sư, văn phòng.",
+  },
+  blackGold: {
+    name: "Black Gold",
+    desc: "Đen vàng cao cấp",
+    note: "Hợp CV muốn nổi bật mạnh.",
+  },
+  lavender: {
+    name: "Lavender Soft",
+    desc: "Tím nhạt nhẹ nhàng",
+    note: "Hợp fresher, giáo dục, trợ lý.",
+  },
+  atsSimple: {
+    name: "ATS Simple",
+    desc: "Một cột cực dễ đọc",
+    note: "Hợp nộp hệ thống tuyển dụng tự động.",
+  },
+};
+
+
+const avatarShapeMeta: Record<AvatarShape, { name: string; desc: string }> = {
+  circle: { name: "Tròn", desc: "Ảnh đại diện tròn" },
+  rounded: { name: "Bo góc", desc: "Ảnh vuông bo mềm" },
+  square: { name: "Vuông", desc: "Ảnh vuông rõ khối" },
+  portrait: { name: "Chữ nhật", desc: "Ảnh chân dung dọc" },
+};
+
+const templateClassMap: Record<TemplateKey, string> = {
+  navy: styles.navyTemplate,
+  yellow: styles.yellowTemplate,
+  minimal: styles.minimalTemplate,
+  classic: styles.classicTemplate,
+  modernBlue: styles.modernBlueTemplate,
+  teacher: styles.teacherTemplate,
+  techGrid: styles.techGridTemplate,
+  executive: styles.executiveTemplate,
+  creativePurple: styles.creativePurpleTemplate,
+  emerald: styles.emeraldTemplate,
+  orange: styles.orangeTemplate,
+  slate: styles.slateTemplate,
+  monochrome: styles.monochromeTemplate,
+  compact: styles.compactTemplate,
+  rose: styles.roseTemplate,
+  cyan: styles.cyanTemplate,
+  brown: styles.brownTemplate,
+  blackGold: styles.blackGoldTemplate,
+  lavender: styles.lavenderTemplate,
+  atsSimple: styles.atsSimpleTemplate,
+};
+
+const avatarShapeClassMap: Record<AvatarShape, string> = {
+  circle: styles.avatarCircle,
+  rounded: styles.avatarRounded,
+  square: styles.avatarSquare,
+  portrait: styles.avatarPortrait,
 };
 
 const sectionLabels: Record<SectionKey, string> = {
@@ -336,6 +481,7 @@ export default function CVStudioPage() {
   const [primaryColor, setPrimaryColor] = useState("#315cff");
   const [fontScale, setFontScale] = useState(1);
   const [spacing, setSpacing] = useState(24);
+  const [avatarShape, setAvatarShape] = useState<AvatarShape>("circle");
   const [sectionOrder, setSectionOrder] = useState<SectionKey[]>([
     "summary",
     "experience",
@@ -360,6 +506,7 @@ export default function CVStudioPage() {
         fontScale?: number;
         spacing?: number;
         sectionOrder?: SectionKey[];
+        avatarShape?: AvatarShape;
       };
 
       if (parsed.cv) setCv(parsed.cv);
@@ -368,17 +515,15 @@ export default function CVStudioPage() {
       if (parsed.fontScale) setFontScale(parsed.fontScale);
       if (parsed.spacing) setSpacing(parsed.spacing);
       if (parsed.sectionOrder) setSectionOrder(parsed.sectionOrder);
+      if (parsed.avatarShape) setAvatarShape(parsed.avatarShape);
       setSaveStatus("Đã tải bản nháp");
     } catch {
       setSaveStatus("Không đọc được bản nháp cũ");
     }
   }, []);
 
-  const templateClass = {
-    navy: styles.navyTemplate,
-    yellow: styles.yellowTemplate,
-    minimal: styles.minimalTemplate,
-  }[template];
+  const templateClass = templateClassMap[template] || styles.navyTemplate;
+  const avatarShapeClass = avatarShapeClassMap[avatarShape] || styles.avatarCircle;
 
   const paperStyle = {
     "--cv-accent": primaryColor,
@@ -409,6 +554,7 @@ export default function CVStudioPage() {
         fontScale,
         spacing,
         sectionOrder,
+        avatarShape,
       }),
     );
     setSaveStatus("Đã lưu nháp");
@@ -687,6 +833,7 @@ KỸ NĂNG
                 className={`${styles.templateCard} ${
                   template === key ? styles.templateActive : ""
                 }`}
+                data-template={key}
                 key={key}
                 onClick={() => setTemplate(key)}
               >
@@ -723,6 +870,26 @@ KỸ NĂNG
                   />
                 ),
               )}
+            </div>
+          </label>
+
+          <label className={styles.field}>
+            <span>Khung ảnh đại diện</span>
+            <div className={styles.shapeGrid}>
+              {(Object.keys(avatarShapeMeta) as AvatarShape[]).map((shape) => (
+                <button
+                  type="button"
+                  className={`${styles.shapeButton} ${
+                    avatarShape === shape ? styles.shapeActive : ""
+                  }`}
+                  key={shape}
+                  onClick={() => setAvatarShape(shape)}
+                >
+                  <i className={`${styles.shapePreview} ${avatarShapeClassMap[shape]}`} />
+                  <b>{avatarShapeMeta[shape].name}</b>
+                  <small>{avatarShapeMeta[shape].desc}</small>
+                </button>
+              ))}
             </div>
           </label>
 
@@ -1051,7 +1218,7 @@ KỸ NĂNG
             style={paperStyle}
           >
             <div className={styles.cvHeader}>
-              <div className={styles.avatar} />
+              <div className={`${styles.avatar} ${avatarShapeClass}`} />
               <div>
                 <h1>{cv.profile.name}</h1>
                 <p>{cv.profile.role}</p>
